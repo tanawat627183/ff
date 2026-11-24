@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Panel Studio Pro - คุณเดียร์</title>
+  <title>Panel & Piping Studio Pro - คุณเดียร์</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     html, body {
       margin: 0; padding: 0;
-      width: 100%; height: 100dvh; /* แก้ปัญหาล้นจอบน Chrome มือถือ/แท็บเล็ต */
+      width: 100%; height: 100dvh;
       background-color: #101216;
       color: #f0f0f0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -57,25 +57,27 @@
         linear-gradient(to bottom, #242933 1px, transparent 1px);
       background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
     }
-    svg#canvas { width: 2200px; height: 1600px; display: block; }
+    svg#canvas { width: 2600px; height: 1800px; display: block; touch-action: pan-x pan-y; }
 
     /* เมนูลอยตั้งค่าอุปกรณ์ที่เลือก */
     .inspector {
       position: fixed; top: 52px; right: 12px;
       background: #1a1e24; border: 1px solid #ff8c00; border-radius: 10px;
       padding: 10px; display: none; flex-direction: column; gap: 7px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.8); z-index: 40; width: 205px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.85); z-index: 40; width: 225px;
+      max-height: calc(100dvh - 150px); overflow-y: auto;
     }
     .inspector-header {
       display: flex; justify-content: space-between; align-items: center;
       font-size: 12px; font-weight: bold; color: #ff8c00; border-bottom: 1px solid #2e3440; padding-bottom: 5px;
     }
-    .inspector label { font-size: 11px; color: #94a3b8; }
+    .inspector label { font-size: 11px; color: #94a3b8; display: block; margin-bottom: 2px; }
     .inspector select, .inspector input, .inspector button {
       padding: 5px 8px; border-radius: 5px; background: #262b36; color: #fff;
       border: 1px solid #3f4756; font-size: 12px; width: 100%;
     }
     .inspector .row-btns { display: flex; gap: 5px; }
+    .inspector .row-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 5px; }
 
     /* แถบหมวดหมู่และคลังอุปกรณ์ด้านล่าง */
     .bottom-panel {
@@ -86,9 +88,7 @@
       display: flex; justify-content: space-between; align-items: center;
       background: #14171c; border-bottom: 1px solid #2b303b; padding: 4px 8px 0;
     }
-    .cat-tabs {
-      display: flex; gap: 4px; overflow-x: auto; flex: 1;
-    }
+    .cat-tabs { display: flex; gap: 4px; overflow-x: auto; flex: 1; }
     .cat-tab {
       padding: 5px 10px; font-size: 12px; color: #94a3b8; cursor: pointer;
       border-radius: 6px 6px 0 0; white-space: nowrap; border: 1px solid transparent;
@@ -103,7 +103,7 @@
     .dock.collapsed { display: none; }
     .dock-item {
       background: #222730; border: 1px solid #353c49; border-radius: 8px;
-      padding: 6px 10px; min-width: 90px; text-align: center; cursor: pointer;
+      padding: 6px 10px; min-width: 92px; text-align: center; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0;
     }
     .dock-item:active { background: #313846; border-color: #ff8c00; transform: scale(0.95); }
@@ -116,7 +116,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="brand">
-      <h1>⚡ Panel Studio</h1>
+      <h1>⚡ Panel & Pipe Studio</h1>
       <button id="undoBtn" class="btn" onclick="undo()" title="ย้อนกลับ">↩️ ย้อนกลับ</button>
       <button id="redoBtn" class="btn" onclick="redo()" title="ทำซ้ำ">↪️</button>
     </div>
@@ -135,10 +135,10 @@
 
   <!-- Wire Drawing Helper Banner -->
   <div id="wireBanner" class="wire-banner">
-    <span>📍 โหมดเดินสายอิสระ: แตะจุดเริ่ม -> แตะมุมเลี้ยวบนกระดานได้เรื่อยๆ -> แตะหัวน็อตปลายทางเพื่อจบ</span>
+    <span>📍 โหมดเดินสายอิสระ: แตะจุดเริ่ม -> แตะมุมเลี้ยวได้เรื่อยๆ -> แตะหัวน็อตปลายทางเพื่อจบ</span>
     <div style="display:flex; gap:6px;">
       <button class="btn btn-success" onclick="finishCurrentWire()">✅ จบเส้นนี้</button>
-      <button class="btn btn-danger" onclick="cancelCurrentWire()">ยกเลิกเส้น</button>
+      <button class="btn btn-danger" onclick="cancelCurrentWire()">ยกเลิก</button>
     </div>
   </div>
 
@@ -149,8 +149,35 @@
       <span style="cursor:pointer; color:#94a3b8; padding:0 4px;" onclick="closeInspector()">✕</span>
     </div>
 
+    <!-- ตั้งค่าท่อ: ขนาดหุน และ ความยาว (เมตร / เซน / หุน) -->
+    <div id="pipeSpecGroup" style="display:none; flex-direction:column; gap:6px;">
+      <div>
+        <label>ขนาดท่อ (หุน / นิ้ว):</label>
+        <select id="pipeSizeSelect" onchange="updateDeviceProp('pipeSize', this.value)">
+          <option value="3 หุน">3 หุน (3/8" - 16มม.)</option>
+          <option value="4 หุน">4 หุน (1/2" - 20มม.)</option>
+          <option value="6 หุน">6 หุน (3/4" - 25มม.)</option>
+          <option value="1 นิ้ว">1 นิ้ว (8 หุน - 32มม.)</option>
+          <option value="1.25 นิ้ว">1 นิ้ว 2 หุน (1-1/4")</option>
+          <option value="1.5 นิ้ว">1 นิ้วครึ่ง (1-1/2")</option>
+          <option value="2 นิ้ว">2 นิ้ว (50มม.)</option>
+        </select>
+      </div>
+      <div id="pipeLenBox">
+        <label>ความยาวท่อ / ราง:</label>
+        <div class="row-2">
+          <input type="number" id="pipeLenInput" step="0.1" min="0.1" value="1" oninput="updatePipeLength()">
+          <select id="pipeUnitSelect" onchange="updatePipeLength()">
+            <option value="เมตร">เมตร (ม.)</option>
+            <option value="เซนติเมตร">เซน (ซม.)</option>
+            <option value="หุน">หุน</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
     <div id="ampGroup">
-      <label>ขนาดแอมป์ / ค่าพิกัด:</label>
+      <label>ขนาดแอมป์ / พิกัด:</label>
       <select id="ampSelect" onchange="updateDeviceProp('amp', this.value)">
         <option value="C100">C100 (100A)</option>
         <option value="C63">C63 (63A)</option>
@@ -177,31 +204,31 @@
     </div>
 
     <div id="textGroup">
-      <label>ข้อความป้าย / มาร์คสาย:</label>
-      <input type="text" id="labelInput" placeholder="เช่น L1, ปั๊มบ่อ 1" oninput="updateDeviceProp('label', this.value)">
+      <label>ป้ายชื่อ / มาร์คสาย:</label>
+      <input type="text" id="labelInput" placeholder="เช่น L1, ท่อเมนปั๊ม" oninput="updateDeviceProp('label', this.value)">
     </div>
 
     <div id="widthGroup" style="display:none;">
-      <label>ความยาว (ช่อง / ระดับ):</label>
+      <label>จำนวนช่องราง / บัสบาร์:</label>
       <select id="slotSelect" onchange="updateDeviceProp('slots', parseInt(this.value))">
-        <option value="2">2 หน่วย</option>
-        <option value="4">4 หน่วย</option>
-        <option value="6">6 หน่วย</option>
-        <option value="8">8 หน่วย</option>
-        <option value="12">12 หน่วย</option>
-        <option value="16">16 หน่วย</option>
-        <option value="20">20 หน่วย</option>
+        <option value="4">4 ช่อง</option>
+        <option value="6">6 ช่อง</option>
+        <option value="8">8 ช่อง</option>
+        <option value="12">12 ช่อง</option>
+        <option value="16">16 ช่อง</option>
+        <option value="20">20 ช่อง</option>
       </select>
     </div>
 
     <div class="row-btns">
-      <button onclick="rotateSelected()">🔄 หมุน 90°</button>
-      <button onclick="toggleDeviceState()">⚡ ON/OFF</button>
+      <button onclick="rotateSelected(45)">🔄 หมุน 45°</button>
+      <button onclick="rotateSelected(90)">🔄 หมุน 90°</button>
     </div>
     <div class="row-btns">
+      <button onclick="toggleDeviceState()">⚡ ON/OFF</button>
       <button onclick="duplicateSelected()">📋 คัดลอก</button>
-      <button class="btn-danger" onclick="deleteSelected()">🗑️ ลบ</button>
     </div>
+    <button class="btn-danger" onclick="deleteSelected()">🗑️ ลบอุปกรณ์นี้</button>
   </div>
 
   <!-- Main Grid Canvas -->
@@ -228,40 +255,81 @@
   const GRID = 20;
   let mode = 'select';
   let wireColor = '#8B4513';
-  let activeCategory = 'breakers';
+  let activeCategory = 'pipes';
   let devices = [];
-  let wires = []; // เก็บเป็น { points: [{x,y}, {x,y}, ...], color }
+  let wires = [];
   let selectedDeviceId = null;
   let selectedWireIdx = null;
-  let activeWirePoints = []; // จุดระหว่างกำลังลากสายไฟอิสระ
+  let activeWirePoints = [];
 
-  // ระบบ Undo / Redo
+  // ระบบลากวางแบบเสถียร (Global Pointer Drag State)
+  let dragState = {
+    type: null, // 'device' | 'wireNode'
+    target: null,
+    wireIdx: null,
+    pointIdx: null,
+    startX: 0,
+    startY: 0,
+    origX: 0,
+    origY: 0,
+    hasMoved: false
+  };
+
   let historyStack = [];
   let redoStack = [];
 
+  const PIPE_THICKNESS = {
+    '3 หุน': 16,
+    '4 หุน': 20,
+    '6 หุน': 26,
+    '1 นิ้ว': 32,
+    '1.25 นิ้ว': 38,
+    '1.5 นิ้ว': 44,
+    '2 นิ้ว': 52
+  };
+
   const CATALOG = {
+    pipes: {
+      name: '🪠 ท่อ & รางเดินสาย',
+      items: [
+        { type: 'pipe_pvc', name: 'ท่อ PVC เหลือง', icon: '🟡', pipeSize: '4 หุน', pipeLen: 1.5, pipeUnit: 'เมตร' },
+        { type: 'pipe_upvc', name: 'ท่อ uPVC ขาว', icon: '⚪', pipeSize: '4 หุน', pipeLen: 1.5, pipeUnit: 'เมตร' },
+        { type: 'pipe_emt', name: 'ท่อ EMT โลหะ', icon: '🩶', pipeSize: '4 หุน', pipeLen: 1.5, pipeUnit: 'เมตร' },
+        { type: 'pipe_imc', name: 'ท่อ IMC หนา', icon: '🔩', pipeSize: '6 หุน', pipeLen: 1.5, pipeUnit: 'เมตร' },
+        { type: 'pipe_flex', name: 'ท่ออ่อนลูกฟูก', icon: '〰️', pipeSize: '4 หุน', pipeLen: 50, pipeUnit: 'เซนติเมตร' },
+        { type: 'pipe_liquid', name: 'ท่ออ่อนกันน้ำ', icon: '🐍', pipeSize: '4 หุน', pipeLen: 50, pipeUnit: 'เซนติเมตร' },
+        { type: 'wireway', name: 'รางไวร์เวย์โปร่ง', icon: '🪜', pipeSize: '1 นิ้ว', pipeLen: 1, pipeUnit: 'เมตร' },
+        { type: 'wire_duct', name: 'รางครอบสายไฟ', icon: '▭', pipeSize: '1 นิ้ว', pipeLen: 1, pipeUnit: 'เมตร' }
+      ]
+    },
+    fittings: {
+      name: '↪️ ข้อต่อ & บ็อกซ์',
+      items: [
+        { type: 'elbow90', name: 'ข้องอ 90°', icon: '↪️', pipeSize: '4 หุน' },
+        { type: 'sweep_bend', name: 'ข้องอโค้ง 90°', icon: '⤴️', pipeSize: '4 หุน' },
+        { type: 'elbow45', name: 'ข้องอ 45°', icon: '📐', pipeSize: '4 หุน' },
+        { type: 'tee_pipe', name: 'สามทาง (Tee)', icon: '⊥', pipeSize: '4 หุน' },
+        { type: 'cross_pipe', name: 'สี่ทาง (Cross)', icon: '➕', pipeSize: '4 หุน' },
+        { type: 'coupling', name: 'ข้อต่อตรง', icon: '🔗', pipeSize: '4 หุน' },
+        { type: 'box_conn', name: 'คอนเนคเตอร์เข้าตู้', icon: '🔌', pipeSize: '4 หุน' },
+        { type: 'clamp', name: 'แคลมป์ก้ามปูรัดท่อ', icon: '🧲', pipeSize: '4 หุน' },
+        { type: 'junction_box', name: 'บ็อกซ์พักสาย 4x4', icon: '⬜' },
+        { type: 'round_box', name: 'บ็อกซ์กลมแยกสาย', icon: '⭕' },
+        { type: 'waterproof_box', name: 'บ็อกซ์กันน้ำ IP65', icon: '🛡️' },
+        { type: 'cable_gland', name: 'เคเบิลแกลนด์ PG', icon: '🗜️' }
+      ]
+    },
     breakers: {
       name: '⚡ เบรกเกอร์/กันดูด',
       items: [
         { type: 'main2p', name: 'เมนเบรกเกอร์ 2P', icon: '🔲', defaultAmp: 'C63' },
         { type: 'rcbo2p', name: 'กันดูด RCBO 2P', icon: '🛡️', defaultAmp: 'C63' },
+        { type: 'rcbo4p', name: 'กันดูด RCBO 4P', icon: '🧱', defaultAmp: 'C63' },
         { type: 'rcbo1pn', name: 'กันดูด 1P+N', icon: '🔰', defaultAmp: 'C32' },
         { type: 'mcb1p', name: 'ลูกย่อย 1P', icon: '🔌', defaultAmp: 'C32' },
         { type: 'mcb3p', name: 'เบรกเกอร์ 3P', icon: '🎛️', defaultAmp: 'C32' },
+        { type: 'spd', name: 'กันฟ้าผ่า SPD', icon: '🌩️', defaultAmp: 'C40' },
         { type: 'fuse', name: 'ฟิวส์หลอด DIN', icon: '💊', defaultAmp: 'C10' }
-      ]
-    },
-    pipes: {
-      name: '🪠 ท่อ & รางไวร์เวย์',
-      items: [
-        { type: 'wireway', name: 'รางไวร์เวย์โปร่ง', icon: '🪜', defaultSlots: 8 },
-        { type: 'pipe_pvc', name: 'ท่อ PVC เหลือง', icon: '📏', defaultSlots: 6 },
-        { type: 'pipe_emt', name: 'ท่อ EMT โลหะ', icon: '🔩', defaultSlots: 6 },
-        { type: 'pipe_flex', name: 'ท่ออ่อนลูกฟูก', icon: '〰️', defaultSlots: 4 },
-        { type: 'elbow90', name: 'ข้องอ 90°', icon: '↪️' },
-        { type: 'tee_pipe', name: 'สามทางแยกท่อ', icon: '⊥' },
-        { type: 'junction_box', name: 'บ็อกซ์พักสาย', icon: ' квадрат' },
-        { type: 'cable_gland', name: 'เคเบิลแกลนด์ PG', icon: '🗜️' }
       ]
     },
     rails: {
@@ -283,6 +351,7 @@
         { type: 'timer', name: 'ไทม์เมอร์ตั้งเวลา', icon: '⏱️' },
         { type: 'relay8', name: 'รีเลย์ 8 ขา', icon: '📦' },
         { type: 'phase_prot', name: 'ป้องกันไฟตก/เกิน', icon: '📉' },
+        { type: 'ats', name: 'ATS สลับไฟอัตโนมัติ', icon: '🔁' },
         { type: 'psu_12v', name: 'สวิตชิ่ง 12V/24V', icon: '🔋' }
       ]
     },
@@ -300,6 +369,7 @@
       name: '💧 โหลด/ปลั๊ก/บ่อปลา',
       items: [
         { type: 'outlet_duplex', name: 'เต้ารับกราวด์คู่', icon: '🔌' },
+        { type: 'outlet_wp', name: 'ปลั๊กกันน้ำฝาครอบ', icon: '☔' },
         { type: 'wall_switch', name: 'สวิตช์ทางเดียว', icon: '🎚️' },
         { type: 'water_pump', name: 'ปั๊มน้ำ (Pump)', icon: '🌊' },
         { type: 'air_pump', name: 'ปั๊มลม (Air Pump)', icon: '🫧' },
@@ -326,9 +396,74 @@
   const inspector = document.getElementById('inspector');
   const canvas = document.getElementById('canvas');
 
+  // --- ระบบ Global Pointer Events ลากติดนิ้วเสถียร 100% ---
+  window.addEventListener('pointermove', (e) => {
+    if (!dragState.type) return;
+    e.preventDefault();
+    const dx = e.clientX - dragState.startX;
+    const dy = e.clientY - dragState.startY;
+
+    if (!dragState.hasMoved && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+      dragState.hasMoved = true;
+      pushHistory();
+    }
+
+    if (dragState.hasMoved) {
+      if (dragState.type === 'device' && dragState.target) {
+        dragState.target.x = Math.max(0, snap(dragState.origX + dx));
+        dragState.target.y = Math.max(0, snap(dragState.origY + dy));
+        render();
+      } else if (dragState.type === 'wireNode' && dragState.target) {
+        dragState.target.x = Math.max(0, snap(dragState.origX + dx));
+        dragState.target.y = Math.max(0, snap(dragState.origY + dy));
+        render();
+      }
+    }
+  }, { passive: false });
+
+  window.addEventListener('pointerup', () => {
+    if (dragState.type) {
+      if (dragState.hasMoved) saveData();
+      dragState.type = null;
+      dragState.target = null;
+    }
+  });
+
+  function startDeviceDrag(e, dev) {
+    if (mode !== 'select') return;
+    e.stopPropagation();
+    selectedDeviceId = dev.id;
+    selectedWireIdx = null;
+    showInspector(dev);
+    dragState = {
+      type: 'device',
+      target: dev,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: dev.x,
+      origY: dev.y,
+      hasMoved: false
+    };
+    render();
+  }
+
+  function startWireNodeDrag(e, pt) {
+    e.stopPropagation();
+    dragState = {
+      type: 'wireNode',
+      target: pt,
+      startX: e.clientX,
+      startY: e.clientY,
+      origX: pt.x,
+      origY: pt.y,
+      hasMoved: false
+    };
+  }
+
+  // --- ระบบ Undo / Redo ---
   function pushHistory() {
     historyStack.push(JSON.stringify({ devices, wires }));
-    if (historyStack.length > 40) historyStack.shift();
+    if (historyStack.length > 50) historyStack.shift();
     redoStack = [];
     updateHistoryButtons();
   }
@@ -383,8 +518,7 @@
     CATALOG[activeCategory].items.forEach(item => {
       const card = document.createElement('div');
       card.className = 'dock-item';
-      const iconStr = item.icon.trim().length > 3 ? '📦' : item.icon;
-      card.innerHTML = `<div class="icon">${iconStr}</div><span>${item.name}</span>`;
+      card.innerHTML = `<div class="icon">${item.icon}</div><span>${item.name}</span>`;
       card.onclick = () => addDevice(item);
       dock.appendChild(card);
     });
@@ -416,7 +550,6 @@
 
   function snap(val) { return Math.round(val / GRID) * GRID; }
 
-  // แตะบนกระดานว่างเพื่อเพิ่มจุดหักมุมสายไฟ หรือยกเลิกการเลือก
   canvas.addEventListener('click', (e) => {
     const rect = canvas.getBoundingClientRect();
     const clickX = snap(e.clientX - rect.left);
@@ -425,12 +558,10 @@
     if (mode === 'wire') {
       activeWirePoints.push({ x: clickX, y: clickY });
       render();
-    } else {
-      if (e.target.id === 'canvas') {
-        closeInspector();
-        selectedWireIdx = null;
-        render();
-      }
+    } else if (e.target.id === 'canvas') {
+      closeInspector();
+      selectedWireIdx = null;
+      render();
     }
   });
 
@@ -465,6 +596,9 @@
       amp: itemSpec.defaultAmp || 'C32',
       color: itemSpec.defaultColor || '#2ecc71',
       slots: itemSpec.defaultSlots || 6,
+      pipeSize: itemSpec.pipeSize || '4 หุน',
+      pipeLen: itemSpec.pipeLen || 1,
+      pipeUnit: itemSpec.pipeUnit || 'เมตร',
       label: itemSpec.defaultLabel || '',
       isOn: true
     };
@@ -475,6 +609,17 @@
     render();
   }
 
+  // คำนวณความยาวพิกเซลของท่อตามหน่วย (เมตร / เซนติเมตร / หุน)
+  function getPipePixelLength(dev) {
+    const len = parseFloat(dev.pipeLen) || 1;
+    const unit = dev.pipeUnit || 'เมตร';
+    let px = 160;
+    if (unit === 'เมตร') px = len * 160;
+    else if (unit === 'เซนติเมตร') px = len * 2.4;
+    else if (unit === 'หุน') px = len * 20;
+    return Math.max(40, Math.min(1200, snap(px)));
+  }
+
   function render() {
     pipesLayer.innerHTML = '';
     railsLayer.innerHTML = '';
@@ -482,7 +627,7 @@
     terminalsLayer.innerHTML = '';
     wiresLayer.innerHTML = '';
 
-    // 1. วาดสายไฟที่เดินเสร็จแล้วทั้งหมด
+    // 1. วาดสายไฟที่เสร็จแล้ว
     wires.forEach((w, idx) => {
       if (!w.points || w.points.length < 2) return;
       const d = w.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
@@ -507,9 +652,8 @@
       };
       wiresLayer.appendChild(path);
 
-      // ถ้าเลือกเส้นสายไฟอยู่ ให้แสดงปุ่มลบและจุดดึงมุมสายไฟอิสระ
       if (isWireSelected && mode === 'select') {
-        w.points.forEach((pt, pIdx) => {
+        w.points.forEach((pt) => {
           const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
           handle.setAttribute('cx', pt.x);
           handle.setAttribute('cy', pt.y);
@@ -518,17 +662,16 @@
           handle.setAttribute('stroke', '#fff');
           handle.setAttribute('stroke-width', '2');
           handle.style.cursor = 'move';
-          setupWireNodeDrag(handle, w, pIdx);
+          handle.addEventListener('pointerdown', (e) => startWireNodeDrag(e, pt));
           terminalsLayer.appendChild(handle);
         });
 
-        // ปุ่มกากบาทลบเส้นสายไฟตรงกึ่งกลางเส้น
         const midPt = w.points[Math.floor(w.points.length / 2)];
         const delBtn = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        delBtn.setAttribute('transform', `translate(${midPt.x}, ${midPt.y - 22})`);
+        delBtn.setAttribute('transform', `translate(${midPt.x}, ${midPt.y - 24})`);
         delBtn.style.cursor = 'pointer';
         delBtn.innerHTML = `
-          <rect x="-24" y="-12" width="48" height="22" rx="4" fill="#dc2626" stroke="#fff"/>
+          <rect x="-26" y="-12" width="52" height="22" rx="4" fill="#dc2626" stroke="#fff"/>
           <text x="0" y="3" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">ลบสาย</text>
         `;
         delBtn.onclick = (e) => {
@@ -543,7 +686,7 @@
       }
     });
 
-    // 2. วาดเส้นสายไฟที่กำลังลากอยู่ (Preview)
+    // 2. วาดเส้นสายไฟที่กำลังลาก
     if (activeWirePoints.length > 0) {
       const d = activeWirePoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
       const preview = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -577,65 +720,146 @@
 
       let pins = [];
       let targetLayer = devicesLayer;
+      const thick = PIPE_THICKNESS[dev.pipeSize || '4 หุน'] || 20;
 
       switch (dev.type) {
-        // --- หมวดท่อและรางไวร์เวย์ ---
-        case 'wireway': {
-          const w = dev.slots * 40;
+        // --- ท่อร้อยสายทั้งหมด (กำหนดขนาดหุน & ความยาว เมตร/เซน/หุน ได้) ---
+        case 'pipe_pvc':
+        case 'pipe_upvc':
+        case 'pipe_emt':
+        case 'pipe_imc':
+        case 'pipe_flex':
+        case 'pipe_liquid':
+        case 'wireway':
+        case 'wire_duct': {
+          const w = getPipePixelLength(dev);
+          const styles = {
+            pipe_pvc: { fill: '#eab308', hi: '#fef08a', tag: 'PVC' },
+            pipe_upvc: { fill: '#f8fafc', hi: '#cbd5e1', tag: 'uPVC' },
+            pipe_emt: { fill: '#94a3b8', hi: '#e2e8f0', tag: 'EMT' },
+            pipe_imc: { fill: '#64748b', hi: '#cbd5e1', tag: 'IMC' },
+            pipe_flex: { fill: '#475569', hi: '#1e293b', tag: 'FLEX' },
+            pipe_liquid: { fill: '#1e293b', hi: '#334155', tag: 'LIQ-FLEX' },
+            wireway: { fill: '#334155', hi: '#0f172a', tag: 'WIREWAY' },
+            wire_duct: { fill: '#cbd5e1', hi: '#94a3b8', tag: 'DUCT' }
+          };
+          const st = styles[dev.type];
+          const specText = `${st.tag} ${dev.pipeSize} • ${dev.pipeLen} ${dev.pipeUnit === 'เซนติเมตร' ? 'ซม.' : (dev.pipeUnit === 'เมตร' ? 'ม.' : 'หุน')}${dev.label ? ' ('+dev.label+')' : ''}`;
+
+          let extra = '';
+          if (dev.type === 'pipe_flex' || dev.type === 'pipe_liquid') {
+            for (let rx = 6; rx < w - 4; rx += 8) {
+              extra += `<line x1="${rx}" y1="0" x2="${rx}" y2="${thick}" stroke="${st.hi}" stroke-width="2.5"/>`;
+            }
+          } else if (dev.type === 'wireway') {
+            for (let rx = 8; rx < w - 12; rx += 18) {
+              extra += `<rect x="${rx}" y="4" width="9" height="${thick - 8}" fill="#0f172a"/>`;
+            }
+          } else {
+            extra = `<line x1="0" y1="${thick*0.28}" x2="${w}" y2="${thick*0.28}" stroke="${st.hi}" stroke-width="2" opacity="0.6"/>`;
+          }
+
           g.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="44" fill="#334155" stroke="${stroke}" stroke-width="${sw}" rx="2"/>
-            ${Array.from({length: dev.slots * 2}).map((_, i) => `<rect x="${8 + i*20}" y="6" width="10" height="32" fill="#0f172a"/>`).join('')}
+            <rect x="0" y="0" width="${w}" height="${thick}" rx="3" fill="${st.fill}" stroke="${stroke}" stroke-width="${sw}"/>
+            ${extra}
+            <rect x="6" y="${-16}" width="${specText.length * 6.5 + 10}" height="14" rx="3" fill="rgba(15,23,42,0.85)"/>
+            <text x="11" y="-6" fill="#facc15" font-size="10" font-weight="bold">${specText}</text>
           `;
           targetLayer = pipesLayer;
           break;
         }
-        case 'pipe_pvc': {
-          const w = dev.slots * 40;
-          g.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="22" rx="4" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
-            <line x1="0" y1="6" x2="${w}" y2="6" stroke="#fef08a" stroke-width="2" opacity="0.6"/>
-          `;
-          targetLayer = pipesLayer;
-          break;
-        }
-        case 'pipe_emt': {
-          const w = dev.slots * 40;
-          g.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="20" rx="3" fill="#94a3b8" stroke="${stroke}" stroke-width="${sw}"/>
-            <line x1="0" y1="5" x2="${w}" y2="5" stroke="#e2e8f0" stroke-width="2"/>
-          `;
-          targetLayer = pipesLayer;
-          break;
-        }
-        case 'pipe_flex': {
-          const w = dev.slots * 30;
-          g.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="22" rx="4" fill="#475569" stroke="${stroke}" stroke-width="${sw}"/>
-            ${Array.from({length: Math.floor(w/10)}).map((_, i) => `<line x1="${6 + i*10}" y1="0" x2="${6 + i*10}" y2="22" stroke="#1e293b" stroke-width="3"/>`).join('')}
-          `;
-          targetLayer = pipesLayer;
-          break;
-        }
+
+        // --- ข้อต่อ & บ็อกซ์ทุกชนิด ---
         case 'elbow90': {
+          const arm = thick + 22;
           g.innerHTML = `
-            <path d="M 0 0 L 40 0 L 40 40 L 18 40 L 18 22 L 0 22 Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
+            <path d="M 0 0 L ${arm} 0 L ${arm} ${arm} L ${arm-thick} ${arm} L ${arm-thick} ${thick} L 0 ${thick} Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="${arm/2}" y="-5" fill="#94a3b8" font-size="9">${dev.pipeSize}</text>
+          `;
+          targetLayer = pipesLayer;
+          break;
+        }
+        case 'sweep_bend': {
+          const arm = thick + 34;
+          g.innerHTML = `
+            <path d="M 0 0 Q ${arm} 0 ${arm} ${arm} L ${arm-thick} ${arm} Q ${arm-thick} ${thick} 0 ${thick} Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
+          `;
+          targetLayer = pipesLayer;
+          break;
+        }
+        case 'elbow45': {
+          g.innerHTML = `
+            <path d="M 0 0 L 26 0 L 46 20 L 32 34 L 18 20 L 0 20 Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
           `;
           targetLayer = pipesLayer;
           break;
         }
         case 'tee_pipe': {
+          const w = thick + 44;
+          const mid = w / 2;
           g.innerHTML = `
-            <path d="M 0 0 L 60 0 L 60 22 L 41 22 L 41 42 L 19 42 L 19 22 L 0 22 Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
+            <path d="M 0 0 L ${w} 0 L ${w} ${thick} L ${mid + thick/2} ${thick} L ${mid + thick/2} ${thick + 22} L ${mid - thick/2} ${thick + 22} L ${mid - thick/2} ${thick} L 0 ${thick} Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
           `;
           targetLayer = pipesLayer;
           break;
         }
+        case 'cross_pipe': {
+          const w = thick + 44;
+          const mid = w / 2;
+          g.innerHTML = `
+            <path d="M ${mid-thick/2} 0 L ${mid+thick/2} 0 L ${mid+thick/2} 22 L ${w} 22 L ${w} ${22+thick} L ${mid+thick/2} ${22+thick} L ${mid+thick/2} ${w} L ${mid-thick/2} ${w} L ${mid-thick/2} ${22+thick} L 0 ${22+thick} L 0 22 L ${mid-thick/2} 22 Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
+          `;
+          targetLayer = pipesLayer;
+          break;
+        }
+        case 'coupling': {
+          g.innerHTML = `
+            <rect x="0" y="-2" width="32" height="${thick+4}" rx="3" fill="#ca8a04" stroke="${stroke}" stroke-width="${sw}"/>
+            <line x1="16" y1="-2" x2="16" y2="${thick+2}" stroke="#854d0e" stroke-width="2"/>
+          `;
+          targetLayer = pipesLayer;
+          break;
+        }
+        case 'box_conn': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="18" height="${thick+4}" rx="2" fill="#94a3b8" stroke="${stroke}"/>
+            <rect x="18" y="-4" width="10" height="${thick+12}" rx="2" fill="#64748b" stroke="${stroke}"/>
+          `;
+          targetLayer = pipesLayer;
+          break;
+        }
+        case 'clamp': {
+          g.innerHTML = `
+            <rect x="0" y="-6" width="14" height="${thick+12}" rx="3" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="7" cy="-3" r="2" fill="#334155"/><circle cx="7" cy="${thick+3}" r="2" fill="#334155"/>
+          `;
+          break;
+        }
         case 'junction_box': {
           g.innerHTML = `
-            <rect x="0" y="0" width="70" height="70" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="6" y="6" width="58" height="58" rx="4" fill="#e2e8f0" stroke="#94a3b8"/>
-            ${drawScrew(12, 12)} ${drawScrew(58, 12)} ${drawScrew(12, 58)} ${drawScrew(58, 58)}
-            ${drawBadge(35, 38, dev.label || 'BOX')}
+            <rect x="0" y="0" width="76" height="76" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="6" y="6" width="64" height="64" rx="4" fill="#e2e8f0" stroke="#94a3b8"/>
+            ${drawScrew(12, 12)} ${drawScrew(64, 12)} ${drawScrew(12, 64)} ${drawScrew(64, 64)}
+            ${drawBadge(38, 41, dev.label || 'BOX 4x4')}
+          `;
+          targetLayer = pipesLayer;
+          break;
+        }
+        case 'round_box': {
+          g.innerHTML = `
+            <circle cx="36" cy="36" r="34" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="36" cy="36" r="26" fill="#fef08a" stroke="#ca8a04"/>
+            ${drawScrew(16, 36)} ${drawScrew(56, 36)}
+          `;
+          targetLayer = pipesLayer;
+          break;
+        }
+        case 'waterproof_box': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="90" height="90" rx="8" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="8" y="8" width="74" height="74" rx="5" fill="#94a3b8" stroke="#475569"/>
+            ${drawScrew(14, 14)} ${drawScrew(76, 14)} ${drawScrew(14, 76)} ${drawScrew(76, 76)}
+            ${drawBadge(45, 48, dev.label || 'IP65')}
           `;
           targetLayer = pipesLayer;
           break;
@@ -649,7 +873,7 @@
           break;
         }
 
-        // --- หมวดราง & บัสบาร์ ---
+        // --- ราง DIN & บัสบาร์ ---
         case 'din_rail': {
           const w = dev.slots * 40;
           g.innerHTML = `
@@ -719,7 +943,7 @@
           break;
         }
 
-        // --- หมวดเบรกเกอร์ ---
+        // --- เบรกเกอร์ & กันดูด ---
         case 'main2p':
         case 'rcbo2p': {
           const isRcbo = dev.type === 'rcbo2p';
@@ -737,6 +961,19 @@
             ${drawBadge(40, 184, dev.label)}
           `;
           pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:20,dy:150},{dx:60,dy:150}];
+          break;
+        }
+        case 'rcbo4p': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="160" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="0" y="42" width="160" height="6" fill="#2563eb"/>
+            <rect x="52" y="56" width="56" height="20" rx="2" fill="#0f172a"/>
+            <text x="80" y="70" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${dev.amp} 4P</text>
+            <rect x="12" y="${dev.isOn ? 86 : 98}" width="136" height="14" rx="2" fill="#1e293b"/>
+            ${[20,60,100,140].map(x => drawScrew(x, 20) + drawScrew(x, 150)).join('')}
+            ${drawBadge(80, 184, dev.label)}
+          `;
+          [20,60,100,140].forEach(x => { pins.push({dx:x,dy:20}); pins.push({dx:x,dy:150}); });
           break;
         }
         case 'rcbo1pn':
@@ -762,14 +999,21 @@
             <rect x="36" y="56" width="48" height="20" rx="2" fill="#0f172a"/>
             <text x="60" y="70" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${dev.amp}</text>
             <rect x="10" y="${dev.isOn ? 86 : 98}" width="100" height="14" rx="2" fill="#1e293b"/>
-            <rect x="14" y="118" width="16" height="7" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
-            <rect x="52" y="118" width="16" height="7" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
-            <rect x="90" y="118" width="16" height="7" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
-            ${drawScrew(20, 20)} ${drawScrew(60, 20)} ${drawScrew(100, 20)}
-            ${drawScrew(20, 150)} ${drawScrew(60, 150)} ${drawScrew(100, 150)}
+            ${[20,60,100].map(x => drawScrew(x, 20) + drawScrew(x, 150)).join('')}
             ${drawBadge(60, 184, dev.label)}
           `;
-          pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:100,dy:20},{dx:20,dy:150},{dx:60,dy:150},{dx:100,dy:150}];
+          [20,60,100].forEach(x => { pins.push({dx:x,dy:20}); pins.push({dx:x,dy:150}); });
+          break;
+        }
+        case 'spd': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="80" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="0" y="42" width="80" height="6" fill="#f97316"/>
+            <text x="40" y="72" fill="#ea580c" font-size="13" font-weight="bold" text-anchor="middle">SPD 40kA</text>
+            <rect x="16" y="90" width="48" height="24" rx="3" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+            ${drawScrew(20, 20)} ${drawScrew(60, 20)} ${drawScrew(40, 150)}
+          `;
+          pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:40,dy:150}];
           break;
         }
         case 'fuse': {
@@ -783,7 +1027,7 @@
           break;
         }
 
-        // --- หมวดตู้คอนโทรล ---
+        // --- ตู้คอนโทรล ---
         case 'magnetic': {
           g.innerHTML = `
             <rect x="0" y="0" width="100" height="150" rx="5" fill="#334155" stroke="${stroke}" stroke-width="${sw}"/>
@@ -814,7 +1058,6 @@
             <rect x="0" y="0" width="80" height="150" rx="4" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
             <rect x="12" y="44" width="56" height="32" rx="3" fill="#84cc16" stroke="#365314"/>
             <text x="40" y="65" fill="#0f172a" font-size="13" font-weight="bold" text-anchor="middle">08:00</text>
-            <circle cx="24" cy="96" r="5" fill="#334155"/><circle cx="40" cy="96" r="5" fill="#334155"/><circle cx="56" cy="96" r="5" fill="#dc2626"/>
             ${drawScrew(20, 20)} ${drawScrew(60, 20)}
             ${drawScrew(20, 130)} ${drawScrew(60, 130)}
             ${drawBadge(40, 164, dev.label || 'TIMER')}
@@ -844,6 +1087,17 @@
           pins = [{dx:20,dy:20},{dx:40,dy:20},{dx:20,dy:130},{dx:40,dy:130}];
           break;
         }
+        case 'ats': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="120" height="150" rx="5" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="60" y="65" fill="#facc15" font-size="13" font-weight="bold" text-anchor="middle">ATS 2P</text>
+            <text x="60" y="85" fill="#38bdf8" font-size="10" text-anchor="middle">${dev.isOn ? 'SOURCE A' : 'SOURCE B'}</text>
+            ${drawScrew(24, 20)} ${drawScrew(50, 20)} ${drawScrew(74, 20)} ${drawScrew(96, 20)}
+            ${drawScrew(35, 130)} ${drawScrew(85, 130)}
+          `;
+          pins = [{dx:24,dy:20},{dx:50,dy:20},{dx:74,dy:20},{dx:96,dy:20},{dx:35,dy:130},{dx:85,dy:130}];
+          break;
+        }
         case 'psu_12v': {
           g.innerHTML = `
             <rect x="0" y="0" width="120" height="90" rx="5" fill="#94a3b8" stroke="${stroke}" stroke-width="${sw}"/>
@@ -855,7 +1109,7 @@
           break;
         }
 
-        // --- หมวดหน้าตู้ & มิเตอร์ ---
+        // --- หน้าตู้ ---
         case 'pilot_lamp': {
           g.innerHTML = `
             <circle cx="30" cy="30" r="26" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
@@ -908,18 +1162,19 @@
           break;
         }
 
-        // --- หมวดโหลด & บ่อปลา ---
-        case 'outlet_duplex': {
+        // --- โหลด & ปลั๊ก ---
+        case 'outlet_duplex':
+        case 'outlet_wp': {
+          const isWp = dev.type === 'outlet_wp';
           g.innerHTML = `
-            <rect x="0" y="0" width="100" height="60" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="0" y="0" width="100" height="60" rx="6" fill="${isWp ? '#cbd5e1' : '#f8fafc'}" stroke="${stroke}" stroke-width="${sw}"/>
             <circle cx="28" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
             <rect x="21" y="22" width="4" height="10" fill="#0f172a"/><rect x="31" y="22" width="4" height="10" fill="#0f172a"/>
-            <circle cx="28" cy="38" r="3" fill="#0f172a"/>
             <circle cx="72" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
             <rect x="65" y="22" width="4" height="10" fill="#0f172a"/><rect x="75" y="22" width="4" height="10" fill="#0f172a"/>
-            <circle cx="72" cy="38" r="3" fill="#0f172a"/>
+            ${isWp ? `<rect x="4" y="4" width="92" height="52" rx="4" fill="rgba(56,189,248,0.22)" stroke="#0284c7"/>` : ''}
             ${drawScrew(20, -12)} ${drawScrew(50, -12)} ${drawScrew(80, -12)}
-            ${drawBadge(50, 74, dev.label)}
+            ${drawBadge(50, 74, dev.label || (isWp ? 'ปลั๊กกันน้ำ' : ''))}
           `;
           pins = [{dx:20,dy:-12},{dx:50,dy:-12},{dx:80,dy:-12}];
           break;
@@ -957,7 +1212,7 @@
           break;
         }
 
-        // --- หมวดไวนัส & ป้ายกำกับ ---
+        // --- ไวนัส & ป้าย ---
         case 'vinus_tag': {
           const text = dev.label || 'L1';
           const bg = dev.color || '#facc15';
@@ -980,7 +1235,7 @@
       }
 
       createTerminalPoints(dev, pins);
-      setupDrag(g, dev);
+      g.addEventListener('pointerdown', (e) => startDeviceDrag(e, dev));
       targetLayer.appendChild(g);
     });
   }
@@ -1006,7 +1261,6 @@
     if (mode !== 'wire') return;
     const rad = ((dev.rot || 0) * Math.PI) / 180;
     points.forEach(pt => {
-      // คำนวณพิกัดจริงหลังการหมุนอุปกรณ์
       const rotX = pt.dx * Math.cos(rad) - pt.dy * Math.sin(rad);
       const rotY = pt.dx * Math.sin(rad) + pt.dy * Math.cos(rad);
       const absX = snap(dev.x + rotX);
@@ -1024,11 +1278,9 @@
       circle.onclick = (e) => {
         e.stopPropagation();
         if (activeWirePoints.length === 0) {
-          // เริ่มต้นสายไฟจากหัวน็อตนี้
           activeWirePoints.push({ x: absX, y: absY });
           render();
         } else {
-          // จบสายไฟที่หัวน็อตปลายทางทันที
           activeWirePoints.push({ x: absX, y: absY });
           finishCurrentWire();
         }
@@ -1037,101 +1289,30 @@
     });
   }
 
-  function setupWireNodeDrag(el, wireObj, pointIndex) {
-    let isDragging = false;
-    const onStart = (e) => {
-      e.stopPropagation();
-      isDragging = true;
-      pushHistory();
-    };
-    const onMove = (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      wireObj.points[pointIndex].x = snap(clientX - rect.left);
-      wireObj.points[pointIndex].y = snap(clientY - rect.top);
-      render();
-    };
-    const onEnd = () => {
-      if (isDragging) {
-        isDragging = false;
-        saveData();
-      }
-    };
-    el.addEventListener('mousedown', onStart);
-    el.addEventListener('touchstart', onStart, { passive: false });
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, { passive: false });
-    window.addEventListener('mouseup', onEnd);
-    window.addEventListener('touchend', onEnd);
-  }
-
-  function setupDrag(el, dev) {
-    let isDragging = false;
-    let moved = false;
-    let startX, startY, origX, origY;
-
-    const onStart = (e) => {
-      if (mode !== 'select') return;
-      e.stopPropagation();
-      isDragging = true;
-      moved = false;
-      selectedDeviceId = dev.id;
-      selectedWireIdx = null;
-      showInspector(dev);
-
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      startX = clientX; startY = clientY;
-      origX = dev.x; origY = dev.y;
-      render();
-    };
-
-    const onMove = (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      if (!moved && (Math.abs(clientX - startX) > 4 || Math.abs(clientY - startY) > 4)) {
-        moved = true;
-        pushHistory();
-      }
-      if (moved) {
-        dev.x = Math.max(0, snap(origX + (clientX - startX)));
-        dev.y = Math.max(0, snap(origY + (clientY - startY)));
-        render();
-      }
-    };
-
-    const onEnd = () => {
-      if (isDragging) {
-        isDragging = false;
-        if (moved) saveData();
-      }
-    };
-
-    el.addEventListener('mousedown', onStart);
-    el.addEventListener('touchstart', onStart, { passive: false });
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, { passive: false });
-    window.addEventListener('mouseup', onEnd);
-    window.addEventListener('touchend', onEnd);
-  }
-
   function showInspector(dev) {
     inspector.style.display = 'flex';
     document.getElementById('inspTitle').textContent = dev.name;
 
-    const hasAmp = ['main2p','rcbo2p','rcbo1pn','mcb1p','mcb3p','fuse','magnetic','overload'].includes(dev.type);
-    const hasColor = ['pilot_lamp','push_btn','vinus_tag'].includes(dev.type);
-    const hasSlots = ['din_rail','comb_busbar','bar_n','bar_g','box_frame','wireway','pipe_pvc','pipe_emt','pipe_flex'].includes(dev.type);
+    const pipeTypes = ['pipe_pvc','pipe_upvc','pipe_emt','pipe_imc','pipe_flex','pipe_liquid','wireway','wire_duct'];
+    const fittingTypes = ['elbow90','sweep_bend','elbow45','tee_pipe','cross_pipe','coupling','box_conn','clamp'];
+    const isPipe = pipeTypes.includes(dev.type);
+    const isFitting = fittingTypes.includes(dev.type);
 
+    const hasAmp = ['main2p','rcbo2p','rcbo4p','rcbo1pn','mcb1p','mcb3p','spd','fuse','magnetic','overload'].includes(dev.type);
+    const hasColor = ['pilot_lamp','push_btn','vinus_tag'].includes(dev.type);
+    const hasSlots = ['din_rail','comb_busbar','bar_n','bar_g','box_frame'].includes(dev.type);
+
+    document.getElementById('pipeSpecGroup').style.display = (isPipe || isFitting) ? 'flex' : 'none';
+    document.getElementById('pipeLenBox').style.display = isPipe ? 'block' : 'none';
     document.getElementById('ampGroup').style.display = hasAmp ? 'block' : 'none';
     document.getElementById('colorGroup').style.display = hasColor ? 'block' : 'none';
     document.getElementById('widthGroup').style.display = hasSlots ? 'block' : 'none';
 
+    if (isPipe || isFitting) {
+      document.getElementById('pipeSizeSelect').value = dev.pipeSize || '4 หุน';
+      document.getElementById('pipeLenInput').value = dev.pipeLen || 1;
+      document.getElementById('pipeUnitSelect').value = dev.pipeUnit || 'เมตร';
+    }
     if (hasAmp) document.getElementById('ampSelect').value = dev.amp;
     if (hasColor) document.getElementById('lampColorSelect').value = dev.color;
     if (hasSlots) document.getElementById('slotSelect').value = dev.slots;
@@ -1154,11 +1335,22 @@
     }
   }
 
-  function rotateSelected() {
+  function updatePipeLength() {
     const dev = devices.find(d => d.id === selectedDeviceId);
     if (dev) {
       pushHistory();
-      dev.rot = ((dev.rot || 0) + 90) % 360;
+      dev.pipeLen = parseFloat(document.getElementById('pipeLenInput').value) || 1;
+      dev.pipeUnit = document.getElementById('pipeUnitSelect').value;
+      saveData();
+      render();
+    }
+  }
+
+  function rotateSelected(deg) {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    if (dev) {
+      pushHistory();
+      dev.rot = ((dev.rot || 0) + deg) % 360;
       saveData();
       render();
     }
@@ -1211,13 +1403,13 @@
   }
 
   function saveData() {
-    localStorage.setItem('dear_panel_v2_devices', JSON.stringify(devices));
-    localStorage.setItem('dear_panel_v2_wires', JSON.stringify(wires));
+    localStorage.setItem('dear_panel_v3_devices', JSON.stringify(devices));
+    localStorage.setItem('dear_panel_v3_wires', JSON.stringify(wires));
   }
 
   function loadData() {
-    const savedDev = localStorage.getItem('dear_panel_v2_devices');
-    const savedWires = localStorage.getItem('dear_panel_v2_wires');
+    const savedDev = localStorage.getItem('dear_panel_v3_devices');
+    const savedWires = localStorage.getItem('dear_panel_v3_wires');
     if (savedDev) {
       devices = JSON.parse(savedDev);
       wires = savedWires ? JSON.parse(savedWires) : [];
@@ -1226,7 +1418,8 @@
         { id: 'd1', type: 'din_rail', name: 'รางปีกนก DIN', x: 80, y: 200, slots: 10 },
         { id: 'd2', type: 'rcbo2p', name: 'กันดูด RCBO 2P', x: 120, y: 140, amp: 'C63', isOn: true, label: 'เมนตู้บ่อปลา' },
         { id: 'd3', type: 'mcb1p', name: 'ลูกย่อย 1P', x: 220, y: 140, amp: 'C32', isOn: true, label: 'ปั๊ม' },
-        { id: 'd4', type: 'mcb1p', name: 'ลูกย่อย 1P', x: 260, y: 140, amp: 'C32', isOn: true, label: 'ฮีตเตอร์' }
+        { id: 'd4', type: 'mcb1p', name: 'ลูกย่อย 1P', x: 260, y: 140, amp: 'C32', isOn: true, label: 'ฮีตเตอร์' },
+        { id: 'd5', type: 'pipe_pvc', name: 'ท่อ PVC เหลือง', x: 80, y: 360, pipeSize: '4 หุน', pipeLen: 1.5, pipeUnit: 'เมตร' }
       ];
     }
   }
