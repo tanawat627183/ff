@@ -1,7 +1,7 @@
 {
   "name": "Panel & Pipe Studio Pro",
   "short_name": "Panel Studio",
-  "description": "ออกแบบตู้คอนซูเมอร์ยูนิต ตู้คอนโทรล และงานเดินท่อไฟฟ้า",
+  "description": "ออกแบบตู้คอนซูเมอร์ยูนิต ตู้คอนโทรล งานเดินท่อไฟฟ้า และถอดแบบวัสดุอัตโนมัติ",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
