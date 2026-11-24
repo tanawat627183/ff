@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23181b20'/%3E%3Cpath d='M280 96L144 288h104l-24 128 144-192H264z' fill='%23ff8c00'/%3E%3C/svg%3E">
-  <title>Panel & Pipe Studio Pro - คุณเดียร์</title>
+  <title>Panel & Pipe Studio Pro V7 - คุณเดียร์</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     html, body {
@@ -130,7 +130,7 @@
     }
     .dpad-btn:active { background: #ff8c00 !important; color: #000 !important; }
 
-    /* หน้าต่าง Modal สรุปรายการวัสดุ (BOM) & ตรวจสอบความปลอดภัย */
+    /* หน้าต่าง Modal สรุปรายการวัสดุ (BOM) */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.75);
       display: none; justify-content: center; align-items: center; z-index: 60; padding: 16px;
@@ -149,16 +149,10 @@
       padding: 14px 16px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px;
       user-select: text; -webkit-user-select: text;
     }
-    .bom-table {
-      width: 100%; border-collapse: collapse; font-size: 12px;
-    }
-    .bom-table th, .bom-table td {
-      border: 1px solid #2e3440; padding: 7px 10px; text-align: left;
-    }
+    .bom-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .bom-table th, .bom-table td { border: 1px solid #2e3440; padding: 7px 10px; text-align: left; }
     .bom-table th { background: #222730; color: #ff8c00; }
-    .safety-box {
-      padding: 10px 12px; border-radius: 8px; font-size: 12px; line-height: 1.5;
-    }
+    .safety-box { padding: 10px 12px; border-radius: 8px; font-size: 12px; line-height: 1.5; }
     .safety-ok { background: rgba(20, 83, 45, 0.4); border: 1px solid #22c55e; color: #bbf7d0; }
     .safety-warn { background: rgba(127, 29, 29, 0.5); border: 1px solid #ef4444; color: #fecaca; }
     .modal-footer {
@@ -213,9 +207,9 @@
     </div>
     <div class="tools">
       <button id="modeSelect" class="btn active" onclick="setMode('select')">✋ ย้าย/เลือก</button>
-      <button id="modeAutoWire" class="btn" onclick="setMode('autowire')">⚡ สายอัตโนมัติ</button>
+      <button id="modeAutoWire" class="btn" onclick="setMode('autowire')">⚡ สายหลบอุปกรณ์</button>
       <button id="modeFreeWire" class="btn" onclick="setMode('freewire')">〰️ สายอิสระ</button>
-      <button class="btn btn-magic" onclick="autoTidyAllWires()">🪄 จัดเรียงสาย</button>
+      <button class="btn btn-magic" onclick="autoTidyAllWires()">🪄 เรียงสายหลบอัตโนมัติ</button>
       <button class="btn btn-bom" onclick="openBOMModal()">📋 สรุปวัสดุ & เช็กไฟ</button>
       <button class="btn btn-save" onclick="exportToPNG()">📸 บันทึกภาพ</button>
       <button class="btn" onclick="exportProjectJSON()" title="ส่งออกไฟล์โปรเจกต์">💾 JSON</button>
@@ -427,39 +421,31 @@
   </div>
 
 <script>
-  // --- ระบบติดตั้ง PWA ลงเครื่อง ---
+  // --- PWA Install ---
   let deferredPrompt = null;
   const installBtn = document.getElementById('installBtn');
-
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
   }
-
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     installBtn.style.display = 'flex';
   });
-
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
     installBtn.style.display = 'none';
   });
-
   if (window.matchMedia('(display-mode: standalone)').matches) {
     installBtn.style.display = 'none';
   }
-
   async function installPWA() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        deferredPrompt = null;
-        installBtn.style.display = 'none';
-      }
+      if (outcome === 'accepted') { deferredPrompt = null; installBtn.style.display = 'none'; }
     } else {
-      alert('วิธีติดตั้งลงหน้าจอหลัก MatePad:\n\n1. แตะปุ่มจุด 3 จุด (⋮) มุมขวาบนของเบราว์เซอร์\n2. เลือก "เพิ่มลงในหน้าจอหลัก" (Add to Home screen)\n3. แนะนำเปิดผ่าน Kiwi Browser จะได้ทางลัดที่หมุนจอตามมือได้อิสระ 100% ครับ');
+      alert('แตะปุ่มจุด 3 จุด (⋮) มุมขวาบนของเบราว์เซอร์ -> เลือก "เพิ่มลงในหน้าจอหลัก" ครับ');
     }
   }
 
@@ -470,7 +456,6 @@
     return Math.ceil(measureCtx.measureText(text).width);
   }
 
-  // --- ระบบจัดการหลายโปรเจกต์ ---
   let projects = {};
   let currentProjectId = 'proj_default';
 
@@ -494,16 +479,9 @@
   let historyStack = [];
   let redoStack = [];
 
-  // พิกัดกระแสสายไฟทองแดงมาตรฐาน มอก. / IEC (A)
   const WIRE_AMPACITY = {
-    '1.5': 15,
-    '2.5': 21,
-    '4': 28,
-    '6': 36,
-    '10': 50,
-    '16': 68,
-    '25': 89,
-    '35': 110
+    '1.5': 15, '2.5': 21, '4': 28, '6': 36,
+    '10': 50, '16': 68, '25': 89, '35': 110
   };
 
   const WIRE_COLOR_NAMES = {
@@ -533,6 +511,39 @@
         { type: 'dc_mcb2p', name: 'เบรกเกอร์ DC 2P', icon: '☀️', defaultAmp: 'C32' },
         { type: 'spd', name: 'กันฟ้าผ่า SPD', icon: '🌩️', defaultAmp: 'C40' },
         { type: 'fuse', name: 'ฟิวส์หลอด DIN', icon: '💊', defaultAmp: 'C10' }
+      ]
+    },
+    indoor: {
+      name: '🏠 ไฟฟ้าในอาคาร',
+      items: [
+        { type: 'outlet_duplex', name: 'เต้ารับกราวด์คู่', icon: '🔌' },
+        { type: 'wall_switch', name: 'สวิตช์ 1 ทาง', icon: '🎚️' },
+        { type: 'switch_2way', name: 'สวิตช์ 2 ทาง (บันได)', icon: '🔀' },
+        { type: 'dimmer_sw', name: 'สวิตช์หรี่ไฟ Dimmer', icon: '🎛️' },
+        { type: 'downlight', name: 'โคมไฟดาวน์ไลท์ LED', icon: '💡' },
+        { type: 'tube_led', name: 'หลอดนีออนยาว T8', icon: '📏' },
+        { type: 'ceiling_fan', name: 'พัดลมเพดาน/ดูดอากาศ', icon: '🌀' },
+        { type: 'air_con', name: 'เครื่องปรับอากาศ (แอร์)', icon: '❄️' },
+        { type: 'water_heater', name: 'เครื่องทำน้ำอุ่น', icon: '🚿' },
+        { type: 'door_bell', name: 'กริ่งประตูบ้าน', icon: '🔔' },
+        { type: 'lan_tv_outlet', name: 'เต้ารับ LAN / TV', icon: '📺' }
+      ]
+    },
+    outdoor: {
+      name: '🌳 ไฟฟ้านอกอาคาร',
+      items: [
+        { type: 'outlet_wp', name: 'ปลั๊กกันน้ำ IP66', icon: '☔' },
+        { type: 'floodlight', name: 'สปอร์ตไลท์ LED', icon: '🔦' },
+        { type: 'street_lamp', name: 'โคมไฟถนน / โซลาร์', icon: '🏮' },
+        { type: 'pillar_lamp', name: 'ไฟหัวเสา / ไฟสนาม', icon: '🕯️' },
+        { type: 'photo_switch', name: 'สวิตช์แสงแดด (Photo)', icon: '🌅' },
+        { type: 'pir_sensor', name: 'เซ็นเซอร์จับเคลื่อนไหว', icon: '📡' },
+        { type: 'gate_motor', name: 'มอเตอร์ประตูรั้วรีโมท', icon: '🚧' },
+        { type: 'water_pump', name: 'ปั๊มน้ำ (Pump)', icon: '🌊' },
+        { type: 'air_pump', name: 'ปั๊มลม (Air Pump)', icon: '🫧' },
+        { type: 'heater', name: 'ฮีตเตอร์ (Heater)', icon: '🔥' },
+        { type: 'float_switch', name: 'สวิตช์ลูกลอย', icon: '🎈' },
+        { type: 'solenoid', name: 'โซลินอยด์วาล์ว', icon: '🚰' }
       ]
     },
     pipes: {
@@ -602,20 +613,6 @@
         { type: 'panel_fan', name: 'พัดลมระบายอากาศตู้', icon: '🌀' }
       ]
     },
-    loads: {
-      name: '💧 โหลด/ปลั๊ก/บ่อปลา',
-      items: [
-        { type: 'outlet_duplex', name: 'เต้ารับกราวด์คู่', icon: '🔌' },
-        { type: 'outlet_wp', name: 'ปลั๊กกันน้ำฝาครอบ', icon: '☔' },
-        { type: 'wall_switch', name: 'สวิตช์ทางเดียว', icon: '🎚️' },
-        { type: 'water_pump', name: 'ปั๊มน้ำ (Pump)', icon: '🌊' },
-        { type: 'air_pump', name: 'ปั๊มลม (Air Pump)', icon: '🫧' },
-        { type: 'heater', name: 'ฮีตเตอร์ (Heater)', icon: '🔥' },
-        { type: 'float_switch', name: 'สวิตช์ลูกลอย', icon: '🎈' },
-        { type: 'solenoid', name: 'โซลินอยด์วาล์ว', icon: '🚰' },
-        { type: 'temp_sensor', name: 'เซ็นเซอร์วัดอุณหภูมิ', icon: '🌡️' }
-      ]
-    },
     labels: {
       name: '🏷️ ไวนัส & ป้ายกำกับ',
       items: [
@@ -638,7 +635,185 @@
   const canvasScaler = document.getElementById('canvasScaler');
   const zoomPill = document.getElementById('zoomPill');
 
-  // --- BOM & Safety Analyzer ---
+  // =========================================================================
+  // ระบบ A* Obstacle-Aware Auto-Routing (เดินสายหลบตัวอุปกรณ์ & ไม่ทับกัน)
+  // =========================================================================
+  function getDeviceObstacleBox(dev) {
+    // ไม่นับกรอบตู้, ราง DIN, ป้ายกำกับ, ปลอกไวนัส เป็นสิ่งกีดขวางสายไฟ
+    const nonBlocking = ['box_frame', 'din_rail', 'label_tag', 'vinus_tag'];
+    if (nonBlocking.includes(dev.type)) return null;
+
+    let w = 60, h = 60;
+    if (['main2p', 'rcbo2p', 'dc_mcb2p', 'spd'].includes(dev.type)) { w = 80; h = 150; }
+    else if (dev.type === 'rcbo4p') { w = 160; h = 150; }
+    else if (['rcbo1pn', 'mcb1p', 'fuse'].includes(dev.type)) { w = 40; h = 150; }
+    else if (dev.type === 'mcb3p') { w = 120; h = 150; }
+    else if (['bar_n', 'bar_g', 'copper_bar'].includes(dev.type)) { w = dev.slots * 28 + 20; h = 36; }
+    else if (dev.type === 'comb_busbar') { w = dev.slots * 40; h = 20; }
+    else if (['outlet_duplex', 'outlet_wp', 'water_pump', 'air_pump', 'heater', 'float_switch', 'solenoid', 'air_con', 'water_heater', 'floodlight', 'street_lamp', 'gate_motor', 'lan_tv_outlet'].includes(dev.type)) { w = 100; h = 60; }
+    else if (['wall_switch', 'switch_2way', 'dimmer_sw', 'downlight', 'ceiling_fan', 'door_bell', 'pillar_lamp', 'photo_switch', 'pir_sensor', 'pilot_lamp', 'push_btn', 'emergency_btn', 'selector'].includes(dev.type)) { w = 60; h = 60; }
+    else if (dev.type === 'tube_led') { w = 160; h = 36; }
+    else if (['magnetic', 'timer', 'ats', 'kwh_meter'].includes(dev.type)) { w = 100; h = 130; }
+    else if (['overload', 'relay8', 'psu_12v', 'digital_meter', 'panel_fan', 'junction_box', 'waterproof_box'].includes(dev.type)) { w = 90; h = 90; }
+    else return null;
+
+    // เผื่อระยะห่างรอบตัวอุปกรณ์ (Padding) 10px และเว้นช่วงหัว-ท้ายที่เป็นน็อตขั้วสายไว้ให้เข้าถึงได้
+    return {
+      x1: dev.x + 6,
+      y1: dev.y + 18,
+      x2: dev.x + w - 6,
+      y2: dev.y + h - 6
+    };
+  }
+
+  function findSmartObstacleFreeRoute(p1, p2, existingWires = []) {
+    const STEP = 20;
+    const sx = snap(p1.x), sy = snap(p1.y);
+    const gx = snap(p2.x), gy = snap(p2.y);
+
+    if (sx === gx && sy === gy) return [{ x: sx, y: sy }];
+
+    // สร้างกรอบขอบเขตการค้นหา (Bounding Window) รอบจุดเริ่มและจุดจบเพื่อความเร็วสูง
+    const minX = Math.max(0, Math.min(sx, gx) - 240);
+    const maxX = Math.min(2760, Math.max(sx, gx) + 240);
+    const minY = Math.max(0, Math.min(sy, gy) - 240);
+    const maxY = Math.min(1960, Math.max(sy, gy) + 240);
+
+    const cols = Math.floor((maxX - minX) / STEP) + 1;
+    const rows = Math.floor((maxY - minY) / STEP) + 1;
+
+    // เก็บกล่องสิ่งกีดขวางของอุปกรณ์ทั้งหมด
+    const obstacles = devices.map(getDeviceObstacleBox).filter(Boolean);
+
+    // เก็บพิกัดเส้นสายไฟเดิมเพื่อหลีกเลี่ยงการวิ่งทับเส้นเดียวกัน
+    const occupiedSegments = new Set();
+    existingWires.forEach(w => {
+      if (!w.points) return;
+      for (let i = 1; i < w.points.length; i++) {
+        const a = w.points[i - 1], b = w.points[i];
+        const steps = Math.max(Math.abs(b.x - a.x), Math.abs(b.y - a.y)) / STEP;
+        for (let s = 0; s <= steps; s++) {
+          const ix = snap(a.x + ((b.x - a.x) * s) / (steps || 1));
+          const iy = snap(a.y + ((b.y - a.y) * s) / (steps || 1));
+          occupiedSegments.add(`${ix},${iy}`);
+        }
+      }
+    });
+
+    function isBlocked(wx, wy) {
+      if ((wx === sx && wy === sy) || (wx === gx && wy === gy)) return false;
+      for (let i = 0; i < obstacles.length; i++) {
+        const box = obstacles[i];
+        if (wx >= box.x1 && wx <= box.x2 && wy >= box.y1 && wy <= box.y2) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    // A* Search บนกริด 4 ทิศทาง (บังคับเดินฉาก 90 องศา + ลงโทษการเลี้ยวบ่อย + ลงโทษการทับสายเดิม)
+    const startCol = Math.round((sx - minX) / STEP);
+    const startRow = Math.round((sy - minY) / STEP);
+    const goalCol = Math.round((gx - minX) / STEP);
+    const goalRow = Math.round((gy - minY) / STEP);
+
+    const openSet = [{ c: startCol, r: startRow, dir: -1, g: 0, f: Math.abs(goalCol - startCol) + Math.abs(goalRow - startRow), parent: null }];
+    const visited = new Map();
+    const dirs = [
+      { dc: 1, dr: 0 },  // 0: ขวา
+      { dc: -1, dr: 0 }, // 1: ซ้าย
+      { dc: 0, dr: 1 },  // 2: ล่าง
+      { dc: 0, dr: -1 }  // 3: บน
+    ];
+
+    let bestNode = null;
+    let iterations = 0;
+
+    while (openSet.length > 0 && iterations < 4500) {
+      iterations++;
+      // ดึงโหนดที่ค่า f ต่ำสุด
+      let minIdx = 0;
+      for (let i = 1; i < openSet.length; i++) {
+        if (openSet[i].f < openSet[minIdx].f) minIdx = i;
+      }
+      const curr = openSet.splice(minIdx, 1)[0];
+
+      if (curr.c === goalCol && curr.r === goalRow) {
+        bestNode = curr;
+        break;
+      }
+
+      const stateKey = `${curr.c},${curr.r},${curr.dir}`;
+      if (visited.has(stateKey) && visited.get(stateKey) <= curr.g) continue;
+      visited.set(stateKey, curr.g);
+
+      for (let d = 0; d < 4; d++) {
+        const nc = curr.c + dirs[d].dc;
+        const nr = curr.r + dirs[d].dr;
+        if (nc < 0 || nc >= cols || nr < 0 || nr >= rows) continue;
+
+        const wx = minX + nc * STEP;
+        const wy = minY + nr * STEP;
+        if (isBlocked(wx, wy)) continue;
+
+        // คิดต้นทุน: เดินตรง = 1, เลี้ยวหักมุม = +2.5, ทับสายไฟเส้นอื่น = +6
+        let moveCost = 1;
+        if (curr.dir !== -1 && curr.dir !== d) moveCost += 2.5;
+        if (occupiedSegments.has(`${wx},${wy}`) && !(wx === gx && wy === gy)) moveCost += 6;
+
+        const ng = curr.g + moveCost;
+        const h = Math.abs(goalCol - nc) + Math.abs(goalRow - nr);
+        openSet.push({ c: nc, r: nr, dir: d, g: ng, f: ng + h, parent: curr });
+      }
+    }
+
+    if (bestNode) {
+      const rawPoints = [];
+      let ptr = bestNode;
+      while (ptr) {
+        rawPoints.unshift({ x: minX + ptr.c * STEP, y: minY + ptr.r * STEP });
+        ptr = ptr.parent;
+      }
+      // ยุบจุดที่อยู่บนเส้นตรงเดียวกันให้เหลือเฉพาะจุดหักมุมจริง
+      const simplified = [rawPoints[0]];
+      for (let i = 1; i < rawPoints.length - 1; i++) {
+        const prev = simplified[simplified.length - 1];
+        const curr = rawPoints[i];
+        const next = rawPoints[i + 1];
+        if (!((prev.x === curr.x && curr.x === next.x) || (prev.y === curr.y && curr.y === next.y))) {
+          simplified.push(curr);
+        }
+      }
+      simplified.push(rawPoints[rawPoints.length - 1]);
+      return simplified;
+    }
+
+    // Fallback กรณีโดนล้อมปิดหมด
+    const midY = snap((sy + gy) / 2);
+    return [{ x: sx, y: sy }, { x: sx, y: midY }, { x: gx, y: midY }, { x: gx, y: gy }];
+  }
+
+  function autoTidyAllWires() {
+    if (wires.length === 0) return;
+    pushHistory();
+    const routedWires = [];
+    wires.forEach((w) => {
+      if (w.points && w.points.length >= 2) {
+        const start = w.points[0];
+        const end = w.points[w.points.length - 1];
+        const smartPts = findSmartObstacleFreeRoute(start, end, routedWires);
+        const updatedWire = { ...w, points: smartPts };
+        routedWires.push(updatedWire);
+      }
+    });
+    wires = routedWires;
+    saveData();
+    render();
+  }
+
+  // =========================================================================
+  // BOM & Safety Analyzer
+  // =========================================================================
   let lastGeneratedBOMText = '';
 
   function openBOMModal() {
@@ -701,7 +876,7 @@
     if (warnings.length > 0) {
       html += `<div class="safety-box safety-warn"><strong>🚨 แจ้งเตือนความปลอดภัยทางไฟฟ้า (มอก./IEC):</strong><br>${warnings.join('<br>')}</div>`;
     } else {
-      html += `<div class="safety-box safety-ok"><strong>✅ ผลการตรวจสอบเบื้องต้น:</strong> ไม่พบจุดที่ขนาดสายไฟต่ำกว่าพิกัดเบรกเกอร์ (ควรตรวจสอบระยะเดินสายจริงหน้างานอีกครั้ง)</div>`;
+      html += `<div class="safety-box safety-ok"><strong>✅ ผลการตรวจสอบเบื้องต้น:</strong> ไม่พบจุดที่ขนาดสายไฟต่ำกว่าพิกัดเบรกเกอร์</div>`;
     }
 
     html += `<table class="bom-table"><thead><tr><th>รายการอุปกรณ์ / วัสดุ</th><th style="width:95px;">จำนวนรวม</th></tr></thead><tbody>`;
@@ -731,20 +906,16 @@
   }
 
   function closeBOMModal(e) {
-    if (!e || e.target.id === 'bomModal') {
-      document.getElementById('bomModal').style.display = 'none';
-    }
+    if (!e || e.target.id === 'bomModal') document.getElementById('bomModal').style.display = 'none';
   }
 
   function copyBOMText() {
     navigator.clipboard.writeText(lastGeneratedBOMText).then(() => {
       alert('คัดลอกรายการวัสดุลงคลิปบอร์ดแล้ว! นำไปวางใน LINE สั่งของได้เลยครับ');
-    }).catch(() => {
-      alert(lastGeneratedBOMText);
-    });
+    }).catch(() => alert(lastGeneratedBOMText));
   }
 
-  // --- Multi-Project & JSON Export/Import ---
+  // --- Multi-Project & JSON ---
   function refreshProjectDropdown() {
     const sel = document.getElementById('projectSelect');
     sel.innerHTML = '';
@@ -771,7 +942,7 @@
   }
 
   function createNewProject() {
-    const name = prompt('ตั้งชื่อโปรเจกต์ใหม่ (เช่น ตู้ไฟร้านหมูกะทะ, ระบบโซลาร์):', 'โปรเจกต์ ' + (Object.keys(projects).length + 1));
+    const name = prompt('ตั้งชื่อโปรเจกต์ใหม่ (เช่น ระบบไฟในบ้าน, ตู้ไฟบ่อปลา):', 'โปรเจกต์ ' + (Object.keys(projects).length + 1));
     if (!name) return;
     saveData();
     const newId = 'proj_' + Date.now();
@@ -838,10 +1009,7 @@
     zoomScale = Math.max(0.4, Math.min(2.0, +(zoomScale + delta).toFixed(2)));
     applyZoom();
   }
-  function resetZoom() {
-    zoomScale = 1.0;
-    applyZoom();
-  }
+  function resetZoom() { zoomScale = 1.0; applyZoom(); }
   function applyZoom() {
     canvasScaler.style.transform = `scale(${zoomScale})`;
     document.getElementById('zoomLabel').textContent = `${Math.round(zoomScale * 100)}%`;
@@ -972,38 +1140,6 @@
         render();
       }
     }
-  }
-
-  function buildAutoRoute(p1, p2, offsetIndex = 0) {
-    const laneOffset = (offsetIndex % 5) * 10;
-    if (Math.abs(p1.y - p2.y) >= 80 && Math.abs(p1.x - p2.x) <= 140) {
-      const detourX = snap(Math.min(p1.x, p2.x) - 40 - laneOffset);
-      const topY = snap(p1.y - 30 - laneOffset);
-      const botY = snap(p2.y + 30 + laneOffset);
-      return [
-        { x: p1.x, y: p1.y }, { x: p1.x, y: topY },
-        { x: detourX, y: topY }, { x: detourX, y: botY },
-        { x: p2.x, y: botY }, { x: p2.x, y: p2.y }
-      ];
-    }
-    const midY = snap((p1.y + p2.y) / 2 + laneOffset);
-    if (p1.x === p2.x) return [{ x: p1.x, y: p1.y }, { x: p2.x, y: p2.y }];
-    return [
-      { x: p1.x, y: p1.y }, { x: p1.x, y: midY },
-      { x: p2.x, y: midY }, { x: p2.x, y: p2.y }
-    ];
-  }
-
-  function autoTidyAllWires() {
-    if (wires.length === 0) return;
-    pushHistory();
-    wires.forEach((w, idx) => {
-      if (w.points.length >= 2) {
-        w.points = buildAutoRoute(w.points[0], w.points[w.points.length - 1], idx);
-      }
-    });
-    saveData();
-    render();
   }
 
   function exportToPNG() {
@@ -1153,7 +1289,7 @@
     document.getElementById('wireBar').style.display = isWireMode ? 'flex' : 'none';
     document.getElementById('finishWireBtn').style.display = mode === 'freewire' ? 'inline-flex' : 'none';
     document.getElementById('wireHintText').textContent = mode === 'autowire'
-      ? 'แตะหัวน็อตต้นทาง -> แตะปลายทาง (หักมุมให้อัตโนมัติ)'
+      ? 'แตะหัวน็อตต้นทาง -> แตะปลายทาง (คำนวณหลบอุปกรณ์ให้เอง)'
       : 'แตะจุดเริ่ม -> แตะมุมเลี้ยวได้เรื่อยๆ -> แตะหัวน็อตปลายทาง';
 
     activeWirePoints = [];
@@ -1357,6 +1493,7 @@
       const thick = PIPE_THICKNESS[dev.pipeSize || '4 หุน'] || 20;
 
       switch (dev.type) {
+        // --- ท่อ & ราง ---
         case 'pipe_pvc':
         case 'pipe_upvc':
         case 'pipe_emt':
@@ -1496,6 +1633,8 @@
           `;
           break;
         }
+
+        // --- ราง & บัสบาร์ ---
         case 'din_rail': {
           const w = dev.slots * 40;
           g.innerHTML = `
@@ -1576,6 +1715,8 @@
           [18,40,62,84,106,124].forEach(x => { pins.push({dx:x,dy:14}); pins.push({dx:x,dy:36}); });
           break;
         }
+
+        // --- เบรกเกอร์ ---
         case 'main2p':
         case 'rcbo2p':
         case 'dc_mcb2p': {
@@ -1659,6 +1800,132 @@
           pins = [{dx:20,dy:20},{dx:20,dy:130}];
           break;
         }
+
+        // --- ไฟฟ้าในอาคาร (Indoor) ---
+        case 'outlet_duplex':
+        case 'outlet_wp': {
+          const isWp = dev.type === 'outlet_wp';
+          g.innerHTML = `
+            <rect x="0" y="0" width="100" height="60" rx="6" fill="${isWp ? '#cbd5e1' : '#f8fafc'}" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="28" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
+            <rect x="21" y="22" width="4" height="10" fill="#0f172a"/><rect x="31" y="22" width="4" height="10" fill="#0f172a"/>
+            <circle cx="72" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
+            <rect x="65" y="22" width="4" height="10" fill="#0f172a"/><rect x="75" y="22" width="4" height="10" fill="#0f172a"/>
+            ${isWp ? `<rect x="4" y="4" width="92" height="52" rx="4" fill="rgba(56,189,248,0.22)" stroke="#0284c7"/>` : ''}
+            ${drawScrew(20, -12)} ${drawScrew(50, -12)} ${drawScrew(80, -12)}
+            ${drawBadge(50, 74, dev.label || (isWp ? 'ปลั๊กกันน้ำ' : ''))}
+          `;
+          pins = [{dx:20,dy:-12},{dx:50,dy:-12},{dx:80,dy:-12}];
+          break;
+        }
+        case 'wall_switch':
+        case 'switch_2way':
+        case 'dimmer_sw': {
+          const tagMap = { wall_switch: '1-WAY', switch_2way: '2-WAY', dimmer_sw: 'DIM' };
+          g.innerHTML = `
+            <rect x="0" y="0" width="60" height="80" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
+            ${dev.type === 'dimmer_sw'
+              ? `<circle cx="30" cy="40" r="16" fill="#cbd5e1" stroke="#475569" stroke-width="2"/><line x1="30" y1="40" x2="38" y2="28" stroke="#0f172a" stroke-width="3"/>`
+              : `<rect x="18" y="18" width="24" height="44" rx="3" fill="${dev.isOn ? '#cbd5e1' : '#94a3b8'}" stroke="#64748b"/><text x="30" y="44" fill="#334155" font-size="8" font-weight="bold" text-anchor="middle">${tagMap[dev.type]}</text>`
+            }
+            ${drawScrew(16, -12)} ${drawScrew(30, -12)} ${drawScrew(44, -12)}
+            ${drawBadge(30, 94, dev.label)}
+          `;
+          pins = dev.type === 'switch_2way' ? [{dx:16,dy:-12},{dx:30,dy:-12},{dx:44,dy:-12}] : [{dx:20,dy:-12},{dx:40,dy:-12}];
+          break;
+        }
+        case 'downlight': {
+          g.innerHTML = `
+            <circle cx="35" cy="35" r="32" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="35" cy="35" r="24" fill="${dev.isOn ? '#fef08a' : '#94a3b8'}" stroke="#ca8a04"/>
+            <text x="35" y="39" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">LED</text>
+            ${drawScrew(20, -10)} ${drawScrew(50, -10)}
+            ${drawBadge(35, 80, dev.label)}
+          `;
+          pins = [{dx:20,dy:-10},{dx:50,dy:-10}];
+          break;
+        }
+        case 'tube_led': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="160" height="28" rx="6" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="10" y="5" width="140" height="18" rx="4" fill="${dev.isOn ? '#fef9c3' : '#94a3b8'}"/>
+            ${drawScrew(20, -10)} ${drawScrew(140, -10)}
+            ${drawBadge(80, 42, dev.label || 'หลอด T8')}
+          `;
+          pins = [{dx:20,dy:-10},{dx:140,dy:-10}];
+          break;
+        }
+        case 'ceiling_fan':
+        case 'air_con':
+        case 'water_heater':
+        case 'door_bell': {
+          const map = {
+            ceiling_fan: { bg: '#0369a1', title: '🌀 พัดลมเพดาน' },
+            air_con: { bg: '#0284c7', title: '❄️ แอร์ (AC)' },
+            water_heater: { bg: '#b91c1c', title: '🚿 เครื่องทำน้ำอุ่น' },
+            door_bell: { bg: '#7c3aed', title: '🔔 กริ่งประตู' }
+          };
+          const info = map[dev.type];
+          g.innerHTML = `
+            <rect x="0" y="0" width="110" height="60" rx="10" fill="${info.bg}" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="55" y="28" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${info.title}</text>
+            <text x="55" y="46" fill="#e0f2fe" font-size="11" text-anchor="middle">${dev.label || '220V'}</text>
+            ${drawScrew(35, -12)} ${drawScrew(75, -12)}
+          `;
+          pins = [{dx:35,dy:-12},{dx:75,dy:-12}];
+          break;
+        }
+        case 'lan_tv_outlet': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="90" height="56" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="16" y="16" width="22" height="24" rx="2" fill="#334155"/>
+            <text x="27" y="31" fill="#fff" font-size="8" text-anchor="middle">LAN</text>
+            <circle cx="62" cy="28" r="11" fill="#cbd5e1" stroke="#475569"/>
+            <circle cx="62" cy="28" r="4" fill="#0f172a"/>
+            ${drawBadge(45, 70, dev.label || 'LAN/TV')}
+          `;
+          break;
+        }
+
+        // --- ไฟฟ้านอกอาคาร (Outdoor) ---
+        case 'floodlight':
+        case 'street_lamp':
+        case 'pillar_lamp':
+        case 'photo_switch':
+        case 'pir_sensor':
+        case 'gate_motor':
+        case 'water_pump':
+        case 'air_pump':
+        case 'heater':
+        case 'float_switch':
+        case 'solenoid': {
+          const map = {
+            floodlight: { bg: '#ca8a04', title: '🔦 สปอร์ตไลท์' },
+            street_lamp: { bg: '#d97706', title: '🏮 โคมไฟถนน' },
+            pillar_lamp: { bg: '#b45309', title: '🕯️ ไฟหัวเสา' },
+            photo_switch: { bg: '#4338ca', title: '🌅 Photo Switch' },
+            pir_sensor: { bg: '#6d28d9', title: '📡 เซ็นเซอร์ PIR' },
+            gate_motor: { bg: '#374151', title: '🚧 ประตูรั้วรีโมท' },
+            water_pump: { bg: '#0284c7', title: '💧 ปั๊มน้ำ' },
+            air_pump: { bg: '#0d9488', title: '🫧 ปั๊มลม' },
+            heater: { bg: '#dc2626', title: '🔥 ฮีตเตอร์' },
+            float_switch: { bg: '#d97706', title: '🎈 ลูกลอย' },
+            solenoid: { bg: '#4f46e5', title: '🚰 โซลินอยด์' }
+          };
+          const info = map[dev.type];
+          g.innerHTML = `
+            <rect x="0" y="0" width="110" height="60" rx="10" fill="${info.bg}" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="55" y="28" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${info.title}</text>
+            <text x="55" y="46" fill="#fef3c7" font-size="11" text-anchor="middle">${dev.label || '220V'}</text>
+            ${drawScrew(25, -12)} ${drawScrew(55, -12)} ${drawScrew(85, -12)}
+          `;
+          pins = ['photo_switch','pir_sensor'].includes(dev.type)
+            ? [{dx:25,dy:-12},{dx:55,dy:-12},{dx:85,dy:-12}]
+            : [{dx:35,dy:-12},{dx:75,dy:-12}];
+          break;
+        }
+
+        // --- ตู้คอนโทรล & หน้าตู้ ---
         case 'kwh_meter': {
           g.innerHTML = `
             <rect x="0" y="0" width="110" height="150" rx="8" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
@@ -1811,56 +2078,8 @@
           pins = [{dx:22,dy:92},{dx:58,dy:92}];
           break;
         }
-        case 'outlet_duplex':
-        case 'outlet_wp': {
-          const isWp = dev.type === 'outlet_wp';
-          g.innerHTML = `
-            <rect x="0" y="0" width="100" height="60" rx="6" fill="${isWp ? '#cbd5e1' : '#f8fafc'}" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="28" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
-            <rect x="21" y="22" width="4" height="10" fill="#0f172a"/><rect x="31" y="22" width="4" height="10" fill="#0f172a"/>
-            <circle cx="72" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
-            <rect x="65" y="22" width="4" height="10" fill="#0f172a"/><rect x="75" y="22" width="4" height="10" fill="#0f172a"/>
-            ${isWp ? `<rect x="4" y="4" width="92" height="52" rx="4" fill="rgba(56,189,248,0.22)" stroke="#0284c7"/>` : ''}
-            ${drawScrew(20, -12)} ${drawScrew(50, -12)} ${drawScrew(80, -12)}
-            ${drawBadge(50, 74, dev.label || (isWp ? 'ปลั๊กกันน้ำ' : ''))}
-          `;
-          pins = [{dx:20,dy:-12},{dx:50,dy:-12},{dx:80,dy:-12}];
-          break;
-        }
-        case 'wall_switch': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="60" height="80" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="18" y="18" width="24" height="44" rx="3" fill="${dev.isOn ? '#cbd5e1' : '#94a3b8'}" stroke="#64748b"/>
-            ${drawScrew(20, -12)} ${drawScrew(40, -12)}
-            ${drawBadge(30, 94, dev.label)}
-          `;
-          pins = [{dx:20,dy:-12},{dx:40,dy:-12}];
-          break;
-        }
-        case 'water_pump':
-        case 'air_pump':
-        case 'heater':
-        case 'float_switch':
-        case 'solenoid':
-        case 'temp_sensor': {
-          const map = {
-            water_pump: { bg: '#0284c7', title: '💧 ปั๊มน้ำ' },
-            air_pump: { bg: '#0d9488', title: '🫧 ปั๊มลม' },
-            heater: { bg: '#dc2626', title: '🔥 ฮีตเตอร์' },
-            float_switch: { bg: '#d97706', title: '🎈 ลูกลอย' },
-            solenoid: { bg: '#4f46e5', title: '🚰 โซลินอยด์' },
-            temp_sensor: { bg: '#be123c', title: '🌡️ เซ็นเซอร์' }
-          };
-          const info = map[dev.type];
-          g.innerHTML = `
-            <rect x="0" y="0" width="110" height="60" rx="10" fill="${info.bg}" stroke="${stroke}" stroke-width="${sw}"/>
-            <text x="55" y="28" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">${info.title}</text>
-            <text x="55" y="46" fill="#e0f2fe" font-size="11" text-anchor="middle">${dev.label || '220V'}</text>
-            ${drawScrew(35, -12)} ${drawScrew(75, -12)}
-          `;
-          pins = [{dx:35,dy:-12},{dx:75,dy:-12}];
-          break;
-        }
+
+        // --- ป้ายกำกับ ---
         case 'vinus_tag': {
           const text = dev.label || 'L1';
           const bg = dev.color || '#facc15';
@@ -1935,7 +2154,7 @@
             const endPt = { x: absX, y: absY };
             pushHistory();
             wires.push({
-              points: buildAutoRoute(startPt, endPt, wires.length),
+              points: findSmartObstacleFreeRoute(startPt, endPt, wires),
               color: wireColor,
               wireType: document.getElementById('wireTypeSelect').value,
               wireSize: document.getElementById('wireSizeSelect').value
