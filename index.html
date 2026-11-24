@@ -23,17 +23,17 @@
 
     /* แถบเครื่องมือด้านบน */
     .topbar {
-      background: #181b20; padding: 6px 12px;
+      background: #181b20; padding: 6px 10px;
       display: flex; justify-content: space-between; align-items: center;
       border-bottom: 1px solid #2b303b; z-index: 30; gap: 6px; flex-wrap: wrap;
       flex-shrink: 0;
     }
-    .brand { display: flex; align-items: center; gap: 6px; }
+    .brand { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
     .brand h1 { font-size: 14px; margin: 0; color: #ff8c00; white-space: nowrap; }
     .tools { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
     .btn {
       background: #252a34; color: #e2e8f0; border: 1px solid #3a4150;
-      padding: 5px 9px; border-radius: 6px; font-size: 12px; cursor: pointer;
+      padding: 5px 8px; border-radius: 6px; font-size: 12px; cursor: pointer;
       display: flex; align-items: center; gap: 4px; white-space: nowrap;
     }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -51,7 +51,7 @@
     .wire-banner {
       background: #2b1d0e; border-bottom: 1px solid #ff8c00; color: #fdba74;
       padding: 5px 12px; font-size: 12px; display: none;
-      justify-content: space-between; align-items: center; z-index: 25; flex-shrink: 0;
+      justify-content: space-between; align-items: center; z-index: 25; flex-shrink: 0; gap: 8px;
     }
 
     /* พื้นที่กระดานกริด */
@@ -70,10 +70,10 @@
 
     /* เมนูลอยตั้งค่าอุปกรณ์ที่เลือก */
     .inspector {
-      position: fixed; top: 52px; right: 12px;
+      position: fixed; top: 52px; right: 10px;
       background: #1a1e24; border: 1px solid #ff8c00; border-radius: 10px;
       padding: 10px; display: none; flex-direction: column; gap: 7px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.85); z-index: 40; width: 230px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.85); z-index: 40; width: 225px;
       max-height: calc(100dvh - 145px); overflow-y: auto;
     }
     .inspector-header {
@@ -140,8 +140,9 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="brand">
-      <h1>⚡ Panel & Pipe Studio</h1>
-      <button id="installBtn" class="btn btn-install" onclick="installPWA()">📲 ติดตั้งแอพ</button>
+      <h1>⚡ Panel Studio</h1>
+      <button id="installBtn" class="btn btn-install" onclick="installPWA()">📲 ติดตั้ง</button>
+      <button class="btn" onclick="toggleScreenOrientation()" title="สลับแนวตั้ง/แนวนอน">🔄 พลิกจอ</button>
       <button id="undoBtn" class="btn" onclick="undo()" title="ย้อนกลับ">↩️</button>
       <button id="redoBtn" class="btn" onclick="redo()" title="ทำซ้ำ">↪️</button>
     </div>
@@ -155,13 +156,13 @@
       <div class="color-dot" style="background:#f1c40f;" title="L2 (เหลือง)" onclick="setWireColor('#f1c40f', this)"></div>
       <div class="color-dot" style="background:#111111; border-color:#777;" title="L3/COM (ดำ)" onclick="setWireColor('#111111', this)"></div>
       <button class="btn btn-save" onclick="exportToPNG()">📸 บันทึกภาพ</button>
-      <button class="btn btn-danger" onclick="clearAll()">🗑️ ล้าง</button>
+      <button class="btn btn-danger" onclick="clearAll()">🗑️</button>
     </div>
   </div>
 
   <!-- Wire Drawing Helper Banner -->
   <div id="wireBanner" class="wire-banner">
-    <span>📍 โหมดเดินสายอิสระ: แตะจุดเริ่ม -> แตะมุมเลี้ยวได้เรื่อยๆ -> แตะหัวน็อตปลายทางเพื่อจบ</span>
+    <span>📍 แตะจุดเริ่ม -> แตะมุมเลี้ยวได้เรื่อยๆ -> แตะหัวน็อตปลายทางเพื่อจบ</span>
     <div style="display:flex; gap:6px;">
       <button class="btn btn-success" onclick="finishCurrentWire()">✅ จบเส้นนี้</button>
       <button class="btn btn-danger" onclick="cancelCurrentWire()">ยกเลิก</button>
@@ -178,9 +179,9 @@
     <!-- แผงปุ่มลูกศรเลื่อนตำแหน่ง -->
     <div class="dpad-box">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:11px; color:#94a3b8;">ปุ่มลูกศรเลื่อนตำแหน่ง:</span>
+        <span style="font-size:11px; color:#94a3b8;">ปุ่มลูกศรเลื่อน:</span>
         <select id="nudgeStep" style="width:auto; padding:2px 4px; font-size:11px;">
-          <option value="20">ทีละ 1 ช่อง (20px)</option>
+          <option value="20">1 ช่อง (20px)</option>
           <option value="5">ละเอียด (5px)</option>
         </select>
       </div>
@@ -297,7 +298,7 @@
   </div>
 
 <script>
-  // --- ระบบติดตั้ง PWA ลงเครื่อง ---
+  // --- ระบบติดตั้ง PWA & สลับแนวตั้ง/แนวนอน ---
   let deferredPrompt = null;
   const installBtn = document.getElementById('installBtn');
 
@@ -331,7 +332,28 @@
         installBtn.style.display = 'none';
       }
     } else {
-      alert('วิธีติดตั้งลงเครื่องบน Chrome / Kiwi Browser:\n\n1. แตะปุ่มจุด 3 จุด (⋮) มุมขวาบนของเบราว์เซอร์\n2. เลือก "เพิ่มลงในหน้าจอหลัก" (Add to Home screen) หรือ "ติดตั้งแอป" (Install app)\n3. กดยืนยัน แอพจะไปขึ้นที่หน้าจอหลักและใช้งานแบบออฟไลน์ได้ทันทีครับ');
+      alert('วิธีติดตั้งลงหน้าจอหลัก MatePad:\n\n1. แตะปุ่มจุด 3 จุด (⋮) มุมขวาบนของเบราว์เซอร์\n2. เลือก "เพิ่มลงในหน้าจอหลัก" (Add to Home screen)\n3. แนะนำเปิดผ่าน Kiwi Browser จะได้ทางลัดที่หมุนจอตามมือได้อิสระ 100% ครับ');
+    }
+  }
+
+  let screenModeState = 'auto'; // 'auto' | 'portrait' | 'landscape'
+  async function toggleScreenOrientation() {
+    try {
+      if (screenModeState === 'auto' || screenModeState === 'landscape') {
+        await screen.orientation.lock('portrait');
+        screenModeState = 'portrait';
+      } else {
+        await screen.orientation.lock('landscape');
+        screenModeState = 'landscape';
+      }
+    } catch (err) {
+      try {
+        screen.orientation.unlock();
+        screenModeState = 'auto';
+        alert('ปลดล็อกการหมุนจอแล้วครับ เอียงเครื่องเพื่อหมุนจอได้เลย (หากใช้ตัวติดตั้งจาก Chrome บน MatePad แนะนำลบออกแล้วเพิ่มทางลัดผ่าน Kiwi Browser แทนครับ)');
+      } catch (e) {
+        alert('ให้ลองลบแอพเดิมออก แล้วเปิดเว็บนี้ผ่าน Kiwi Browser กด "เพิ่มลงในหน้าจอหลัก" จะหมุนจอตามมือได้ 100% ครับ');
+      }
     }
   }
 
