@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Panel Designer - คุณเดียร์</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+    body {
+      margin: 0; padding: 0;
+      background-color: #121417;
+      color: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+    }
+
+    /* แถบเครื่องมือด้านบน */
+    .topbar {
+      background: #1c1f24; padding: 10px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid #2c313a; z-index: 10;
+    }
+    .topbar h1 { font-size: 16px; margin: 0; color: #ff8c00; }
+    .wire-tools { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      background: #2c313a; color: #fff; border: 1px solid #3e4451;
+      padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer;
+    }
+    .btn.active { border-color: #ff8c00; background: #3a2e20; color: #ff8c00; font-weight: bold; }
+    .color-dot {
+      width: 24px; height: 24px; border-radius: 50%; border: 2px solid #555; cursor: pointer;
+    }
+    .color-dot.selected { border-color: #fff; transform: scale(1.15); }
+
+    /* พื้นที่กระดานกริด */
+    .workspace {
+      flex: 1; position: relative; overflow: auto;
+      background-image: 
+        linear-gradient(to right, #1e2229 1px, transparent 1px),
+        linear-gradient(to bottom, #1e2229 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    svg#canvas {
+      width: 1200px; height: 800px; display: block;
+    }
+
+    /* แถบเลือกอุปกรณ์ด้านล่าง */
+    .dock {
+      background: #1c1f24; padding: 12px;
+      border-top: 1px solid #2c313a;
+      display: flex; gap: 12px; overflow-x: auto; align-items: center;
+    }
+    .dock-item {
+      background: #252930; border: 1px solid #383e48; border-radius: 8px;
+      padding: 8px 14px; min-width: 110px; text-align: center; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .dock-item:active { background: #323842; border-color: #ff8c00; }
+    .dock-item span { font-size: 12px; color: #ccc; }
+
+    /* เมนูลอยเมื่อกดเลือกอุปกรณ์ */
+    .inspector {
+      position: fixed; top: 60px; right: 16px;
+      background: #1c1f24; border: 1px solid #ff8c00; border-radius: 8px;
+      padding: 12px; display: none; flex-direction: column; gap: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; width: 180px;
+    }
+    .inspector select, .inspector button {
+      padding: 6px; border-radius: 4px; background: #2c313a; color: #fff; border: 1px solid #444;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <h1>⚡ ตู้ไฟ DIY (โหมดเห็นภาพจริง)</h1>
+    <div class="wire-tools">
+      <button id="modeSelect" class="btn active" onclick="setMode('select')">✋ ลากอุปกรณ์</button>
+      <button id="modeWire" class="btn" onclick="setMode('wire')">〰️ เดินสายไฟ</button>
+      <div class="color-dot selected" style="background:#8B4513;" title="สาย L (น้ำตาล)" onclick="setWireColor('#8B4513', this)"></div>
+      <div class="color-dot" style="background:#1E90FF;" title="สาย N (ฟ้า)" onclick="setWireColor('#1E90FF', this)"></div>
+      <div class="color-dot" style="background:#32CD32;" title="สาย G (เขียว)" onclick="setWireColor('#32CD32', this)"></div>
+      <button class="btn" style="background:#5a1e1e;" onclick="clearAll()">ล้างกระดาน</button>
+    </div>
+  </div>
+
+  <!-- Inspector Menu -->
+  <div id="inspector" class="inspector">
+    <div style="font-size:13px; font-weight:bold; color:#ff8c00;">ตั้งค่าอุปกรณ์</div>
+    <label style="font-size:12px;">ขนาดแอมป์ (A):</label>
+    <select id="ampSelect" onchange="changeAmp(this.value)">
+      <option value="C63">C63 (63A)</option>
+      <option value="C50">C50 (50A)</option>
+      <option value="C32">C32 (32A)</option>
+      <option value="C20">C20 (20A)</option>
+      <option value="C16">C16 (16A)</option>
+      <option value="C10">C10 (10A)</option>
+    </select>
+    <button onclick="toggleBreakerState()">สับสวิตช์ ON / OFF</button>
+    <button style="background:#7a2222;" onclick="deleteSelected()">ลบอุปกรณ์นี้</button>
+  </div>
+
+  <!-- Main Grid Canvas -->
+  <div class="workspace">
+    <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+      <!-- ราง DIN มาตรฐาน -->
+      <g id="din-rail" transform="translate(100, 220)">
+        <rect x="0" y="0" width="760" height="50" fill="#7f8c8d" rx="3"/>
+        <rect x="0" y="10" width="760" height="30" fill="#95a5a6"/>
+        <rect x="15" y="21" width="30" height="8" rx="4" fill="#1e2229"/>
+        <rect x="715" y="21" width="30" height="8" rx="4" fill="#1e2229"/>
+      </g>
+      <g id="wires-layer"></g>
+      <g id="devices-layer"></g>
+      <g id="terminals-layer"></g>
+    </svg>
+  </div>
+
+  <!-- Bottom Component Dock -->
+  <div class="dock">
+    <div class="dock-item" onclick="addDevice('rcbo2p')">
+      <div style="font-size:20px;">🎛️</div>
+      <span>เมน RCBO 2P</span>
+    </div>
+    <div class="dock-item" onclick="addDevice('mcb1p')">
+      <div style="font-size:20px;">🔌</div>
+      <span>ลูกย่อย 1P</span>
+    </div>
+    <div class="dock-item" onclick="addDevice('terminal')">
+      <div style="font-size:20px;">🔩</div>
+      <span>บาร์ N / G</span>
+    </div>
+  </div>
+
+<script>
+  const GRID = 20;
+  let mode = 'select';
+  let wireColor = '#8B4513';
+  let devices = [];
+  let wires = [];
+  let selectedDeviceId = null;
+  let wireStartPoint = null;
+
+  const devicesLayer = document.getElementById('devices-layer');
+  const wiresLayer = document.getElementById('wires-layer');
+  const terminalsLayer = document.getElementById('terminals-layer');
+  const inspector = document.getElementById('inspector');
+
+  function setMode(newMode) {
+    mode = newMode;
+    document.getElementById('modeSelect').classList.toggle('active', mode === 'select');
+    document.getElementById('modeWire').classList.toggle('active', mode === 'wire');
+    wireStartPoint = null;
+    if (mode === 'wire') inspector.style.display = 'none';
+    render();
+  }
+
+  function setWireColor(color, el) {
+    wireColor = color;
+    document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function snap(val) {
+    return Math.round(val / GRID) * GRID;
+  }
+
+  function addDevice(type) {
+    const id = 'dev_' + Date.now();
+    // วางเรียงต่อกันบนราง DIN (แกน Y = 160 เพื่อให้กึ่งกลางทับรางพอดี)
+    const offsetX = 140 + (devices.length * 60);
+    devices.push({
+      id,
+      type,
+      x: snap(offsetX),
+      y: type === 'terminal' ? 80 : 160,
+      amp: type === 'rcbo2p' ? 'C63' : 'C32',
+      isOn: true
+    });
+    render();
+  }
+
+  function render() {
+    devicesLayer.innerHTML = '';
+    terminalsLayer.innerHTML = '';
+    wiresLayer.innerHTML = '';
+
+    // 1. วาดสายไฟทั้งหมด
+    wires.forEach((w, idx) => {
+      const pathData = calculateOrthogonalPath(w.x1, w.y1, w.x2, w.y2);
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', pathData);
+      path.setAttribute('stroke', w.color);
+      path.setAttribute('stroke-width', '6');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      path.setAttribute('fill', 'none');
+      path.style.cursor = 'pointer';
+      path.onclick = () => {
+        if (confirm('ลบเส้นสายไฟนี้?')) {
+          wires.splice(idx, 1);
+          render();
+        }
+      };
+      wiresLayer.appendChild(path);
+    });
+
+    // 2. วาดอุปกรณ์ทั้งหมด
+    devices.forEach(dev => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('transform', `translate(${dev.x}, ${dev.y})`);
+      g.style.cursor = 'grab';
+
+      const isSelected = dev.id === selectedDeviceId;
+      const strokeColor = isSelected ? '#ff8c00' : '#222';
+
+      if (dev.type === 'rcbo2p') {
+        // วาด RCBO 2P (กว้าง 80px สูง 170px)
+        g.innerHTML = `
+          <rect x="0" y="0" width="80" height="170" rx="4" fill="#e6e9ef" stroke="${strokeColor}" stroke-width="${isSelected?3:1.5}"/>
+          <rect x="0" y="45" width="80" height="6" fill="#d9381e"/>
+          <!-- ป้ายแอมป์ -->
+          <rect x="18" y="60" width="44" height="20" rx="2" fill="#1a1a1a"/>
+          <text x="40" y="75" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">${dev.amp}</text>
+          <!-- ช่องสถานะสีเขียว/แดง -->
+          <rect x="14" y="115" width="16" height="7" rx="1" fill="${dev.isOn ? '#2ecc71' : '#e74c3c'}"/>
+          <rect x="50" y="115" width="16" height="7" rx="1" fill="${dev.isOn ? '#2ecc71' : '#e74c3c'}"/>
+          <!-- คันโยกสวิตช์ -->
+          <rect x="10" y="${dev.isOn ? 88 : 98}" width="60" height="14" rx="2" fill="#2c3e50"/>
+          <!-- หัวน็อตขั้วบน-ล่าง -->
+          ${drawScrew(20, 20)} ${drawScrew(60, 20)}
+          ${drawScrew(20, 150)} ${drawScrew(60, 150)}
+        `;
+        createTerminalPoints(dev, [
+          { dx: 20, dy: 20 }, { dx: 60, dy: 20 },
+          { dx: 20, dy: 150 }, { dx: 60, dy: 150 }
+        ]);
+      } 
+      else if (dev.type === 'mcb1p') {
+        // วาด MCB 1P (กว้าง 40px สูง 170px)
+        g.innerHTML = `
+          <rect x="0" y="0" width="40" height="170" rx="4" fill="#e6e9ef" stroke="${strokeColor}" stroke-width="${isSelected?3:1.5}"/>
+          <rect x="0" y="45" width="40" height="6" fill="#d9381e"/>
+          <rect x="4" y="60" width="32" height="20" rx="2" fill="#1a1a1a"/>
+          <text x="20" y="75" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${dev.amp}</text>
+          <rect x="12" y="115" width="16" height="7" rx="1" fill="${dev.isOn ? '#2ecc71' : '#e74c3c'}"/>
+          <rect x="6" y="${dev.isOn ? 88 : 98}" width="28" height="14" rx="2" fill="#2c3e50"/>
+          ${drawScrew(20, 20)}
+          ${drawScrew(20, 150)}
+        `;
+        createTerminalPoints(dev, [
+          { dx: 20, dy: 20 }, { dx: 20, dy: 150 }
+        ]);
+      }
+      else if (dev.type === 'terminal') {
+        // บาร์เทอร์มินอล 4 ช่อง
+        g.innerHTML = `
+          <rect x="0" y="0" width="120" height="36" rx="4" fill="#2980b9" stroke="${strokeColor}" stroke-width="${isSelected?3:1.5}"/>
+          ${drawScrew(20, 18)} ${drawScrew(46, 18)} ${drawScrew(74, 18)} ${drawScrew(100, 18)}
+        `;
+        createTerminalPoints(dev, [
+          { dx: 20, dy: 18 }, { dx: 46, dy: 18 }, { dx: 74, dy: 18 }, { dx: 100, dy: 18 }
+        ]);
+      }
+
+      // ระบบลากวาง (รองรับทั้งนิ้วสัมผัสและเมาส์)
+      setupDrag(g, dev);
+      devicesLayer.appendChild(g);
+    });
+  }
+
+  function drawScrew(cx, cy) {
+    return `
+      <circle cx="${cx}" cy="${cy}" r="9" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="1.5"/>
+      <line x1="${cx-4}" y1="${cy-4}" x2="${cx+4}" y2="${cy+4}" stroke="#555" stroke-width="2"/>
+      <line x1="${cx+4}" y1="${cy-4}" x2="${cx-4}" y2="${cy+4}" stroke="#555" stroke-width="2"/>
+    `;
+  }
+
+  function createTerminalPoints(dev, points) {
+    if (mode !== 'wire') return;
+    points.forEach(pt => {
+      const absX = dev.x + pt.dx;
+      const absY = dev.y + pt.dy;
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', absX);
+      circle.setAttribute('cy', absY);
+      circle.setAttribute('r', '12');
+      const isStart = wireStartPoint && wireStartPoint.x === absX && wireStartPoint.y === absY;
+      circle.setAttribute('fill', isStart ? '#ff8c00' : 'rgba(255, 140, 0, 0.35)');
+      circle.setAttribute('stroke', '#ff8c00');
+      circle.setAttribute('stroke-width', '2');
+      circle.style.cursor = 'crosshair';
+
+      circle.onclick = (e) => {
+        e.stopPropagation();
+        if (!wireStartPoint) {
+          wireStartPoint = { x: absX, y: absY };
+          render();
+        } else {
+          if (wireStartPoint.x !== absX || wireStartPoint.y !== absY) {
+            wires.push({
+              x1: wireStartPoint.x, y1: wireStartPoint.y,
+              x2: absX, y2: absY,
+              color: wireColor
+            });
+          }
+          wireStartPoint = null;
+          render();
+        }
+      };
+      terminalsLayer.appendChild(circle);
+    });
+  }
+
+  // คำนวณเส้นหักมุม 90 องศาหลบตัวอุปกรณ์
+  function calculateOrthogonalPath(x1, y1, x2, y2) {
+    // ถ้าเชื่อมจากด้านบนลงด้านล่าง (เช่น เมนลงลูกย่อย) ให้เดินอ้อมซ้ายหรือขวา
+    if (Math.abs(y1 - y2) > 80 && Math.abs(x1 - x2) < 120) {
+      const detourX = Math.min(x1, x2) - 40;
+      const topY = y1 - 35;
+      const botY = y2 + 35;
+      return `M ${x1} ${y1} L ${x1} ${topY} L ${detourX} ${topY} L ${detourX} ${botY} L ${x2} ${botY} L ${x2} ${y2}`;
+    }
+    // กรณีทั่วไป หักมุมกึ่งกลาง
+    const midY = (y1 + y2) / 2;
+    return `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
+  }
+
+  function setupDrag(el, dev) {
+    let isDragging = false;
+    let startX, startY, origX, origY;
+
+    const onStart = (e) => {
+      if (mode !== 'select') return;
+      isDragging = true;
+      selectedDeviceId = dev.id;
+      showInspector(dev);
+
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      startX = clientX; startY = clientY;
+      origX = dev.x; origY = dev.y;
+    };
+
+    const onMove = (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      dev.x = snap(origX + (clientX - startX));
+      // ถ้าลากใกล้ราง DIN (Y ระหว่าง 130-190) ให้ดูดติดรางอัตโนมัติ
+      let newY = snap(origY + (clientY - startY));
+      if (dev.type !== 'terminal' && newY >= 130 && newY <= 190) {
+        newY = 160;
+      }
+      dev.y = newY;
+      render();
+    };
+
+    const onEnd = () => { isDragging = false; };
+
+    el.addEventListener('mousedown', onStart);
+    el.addEventListener('touchstart', onStart, { passive: false });
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchend', onEnd);
+  }
+
+  function showInspector(dev) {
+    inspector.style.display = 'flex';
+    document.getElementById('ampSelect').value = dev.amp;
+  }
+
+  function changeAmp(val) {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    if (dev) { dev.amp = val; render(); }
+  }
+
+  function toggleBreakerState() {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    if (dev) { dev.isOn = !dev.isOn; render(); }
+  }
+
+  function deleteSelected() {
+    devices = devices.filter(d => d.id !== selectedDeviceId);
+    selectedDeviceId = null;
+    inspector.style.display = 'none';
+    render();
+  }
+
+  function clearAll() {
+    if (confirm('ล้างอุปกรณ์และสายไฟทั้งหมด?')) {
+      devices = []; wires = []; selectedDeviceId = null;
+      inspector.style.display = 'none';
+      render();
+    }
+  }
+
+  // สร้างชุดเริ่มต้นให้ดูเป็นตัวอย่างเหมือนในรูป (RCBO C63 + ลูกย่อย C32 x 2)
+  addDevice('rcbo2p');
+  addDevice('mcb1p');
+  addDevice('mcb1p');
+  devices[1].x = 220;
+  devices[2].x = 260;
+  render();
+</script>
+</body>
+</html>
