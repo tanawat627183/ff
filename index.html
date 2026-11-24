@@ -3,6 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#181b20">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23181b20'/%3E%3Cpath d='M280 96L144 288h104l-24 128 144-192H264z' fill='%23ff8c00'/%3E%3C/svg%3E">
   <title>Panel & Piping Studio Pro - คุณเดียร์</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
@@ -32,6 +38,7 @@
     }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn.active { border-color: #ff8c00; background: #3b2a1a; color: #ff8c00; font-weight: bold; }
+    .btn-install { background: #b45309; border-color: #f59e0b; color: #fff; font-weight: bold; }
     .btn-save { background: #1e3a8a; border-color: #3b82f6; color: #dbeafe; font-weight: bold; }
     .btn-success { background: #14532d; border-color: #22c55e; color: #bbf7d0; }
     .btn-danger { background: #4a1c1c; border-color: #7f2d2d; color: #fca5a5; }
@@ -59,7 +66,6 @@
       background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
     }
     svg#canvas { width: 2600px; height: 1800px; display: block; }
-    /* ป้องกันเบราว์เซอร์แย่งการสัมผัสเวลาลากตัวอุปกรณ์และจุดสายไฟ */
     .draggable-item, .wire-handle { touch-action: none; }
 
     /* เมนูลอยตั้งค่าอุปกรณ์ที่เลือก */
@@ -135,7 +141,8 @@
   <div class="topbar">
     <div class="brand">
       <h1>⚡ Panel & Pipe Studio</h1>
-      <button id="undoBtn" class="btn" onclick="undo()" title="ย้อนกลับ">↩️ ย้อนกลับ</button>
+      <button id="installBtn" class="btn btn-install" onclick="installPWA()">📲 ติดตั้งแอพ</button>
+      <button id="undoBtn" class="btn" onclick="undo()" title="ย้อนกลับ">↩️</button>
       <button id="redoBtn" class="btn" onclick="redo()" title="ทำซ้ำ">↪️</button>
     </div>
     <div class="tools">
@@ -290,6 +297,45 @@
   </div>
 
 <script>
+  // --- ระบบติดตั้ง PWA ลงเครื่อง ---
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('installBtn');
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'flex';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    installBtn.style.display = 'none';
+  }
+
+  async function installPWA() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+      }
+    } else {
+      alert('วิธีติดตั้งลงเครื่องบน Chrome / Kiwi Browser:\n\n1. แตะปุ่มจุด 3 จุด (⋮) มุมขวาบนของเบราว์เซอร์\n2. เลือก "เพิ่มลงในหน้าจอหลัก" (Add to Home screen) หรือ "ติดตั้งแอป" (Install app)\n3. กดยืนยัน แอพจะไปขึ้นที่หน้าจอหลักและใช้งานแบบออฟไลน์ได้ทันทีครับ');
+    }
+  }
+
+  // --- ระบบหลักของแอพ ---
   const GRID = 20;
   let mode = 'select';
   let wireColor = '#8B4513';
@@ -300,9 +346,8 @@
   let selectedWireIdx = null;
   let activeWirePoints = [];
 
-  // ระบบลากแบบ Direct DOM Transform (ไม่ทำลาย Element ระหว่างลาก)
   let dragState = {
-    type: null, // 'device' | 'wireNode'
+    type: null,
     target: null,
     domEl: null,
     pointerId: null,
@@ -434,7 +479,6 @@
   const inspector = document.getElementById('inspector');
   const canvas = document.getElementById('canvas');
 
-  // --- ระบบลากติดนิ้ว 100% ด้วย Direct DOM Transform ---
   window.addEventListener('pointermove', (e) => {
     if (!dragState.type) return;
     if (dragState.pointerId !== null && e.pointerId !== dragState.pointerId) return;
@@ -456,7 +500,6 @@
         dragState.target.x = nextX;
         dragState.target.y = nextY;
         const rot = dragState.target.rot || 0;
-        // เลื่อนตัว DOM โดยตรง ไม่ต้อง Re-render ทั้งจอ นิ้วเลยไม่หลุด
         dragState.domEl.setAttribute('transform', `translate(${nextX}, ${nextY}) rotate(${rot})`);
       } else if (dragState.type === 'wireNode' && dragState.target && dragState.domEl) {
         dragState.target.x = nextX;
@@ -506,7 +549,6 @@
       hasMoved: false
     };
 
-    // ถ้าเพิ่งเปลี่ยนตัวเลือก ให้วาดกรอบสีส้มก่อน 1 ครั้ง แล้วชี้เป้าไปที่ตัวใหม่ทันที
     if (!isAlreadySelected) {
       render();
       const freshEl = document.getElementById('el_' + dev.id);
@@ -529,7 +571,6 @@
     };
   }
 
-  // --- ปุ่มลูกศรเลื่อนตำแหน่งทีละจังหวะ ---
   function nudgeSelected(dirX, dirY) {
     const step = parseInt(document.getElementById('nudgeStep').value) || 20;
     if (selectedDeviceId) {
@@ -544,14 +585,12 @@
     }
   }
 
-  // --- บันทึกภาพเป็นไฟล์ PNG ---
   function exportToPNG() {
     if (devices.length === 0 && wires.length === 0) {
       alert('ยังไม่มีอุปกรณ์บนกระดานให้บันทึกครับ');
       return;
     }
 
-    // คำนวณขอบเขตจริงของงานทั้งหมดเพื่อตัดภาพให้พอดี ไม่ติดพื้นที่ว่างเยอะเกินไป
     let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
     devices.forEach(d => {
       minX = Math.min(minX, d.x - 40);
@@ -573,7 +612,6 @@
     const width = Math.max(400, maxX - minX);
     const height = Math.max(300, maxY - minY);
 
-    // โคลน SVG ปัจจุบันแล้วใส่พื้นหลังเข้ม
     const cloneSvg = canvas.cloneNode(true);
     cloneSvg.setAttribute('viewBox', `${minX} ${minY} ${width} ${height}`);
     cloneSvg.setAttribute('width', width);
@@ -594,7 +632,7 @@
     const img = new Image();
     img.onload = () => {
       const exportCanvas = document.createElement('canvas');
-      exportCanvas.width = width * 2; // ความละเอียด 2x คมชัด
+      exportCanvas.width = width * 2;
       exportCanvas.height = height * 2;
       const ctx = exportCanvas.getContext('2d');
       ctx.scale(2, 2);
@@ -612,7 +650,6 @@
     img.src = url;
   }
 
-  // --- ระบบ Undo / Redo ---
   function pushHistory() {
     historyStack.push(JSON.stringify({ devices, wires }));
     if (historyStack.length > 50) historyStack.shift();
@@ -806,7 +843,6 @@
     terminalsLayer.innerHTML = '';
     renderWiresOnly();
 
-    // จุดดึงมุมสายไฟที่เลือกอยู่
     if (selectedWireIdx !== null && mode === 'select' && wires[selectedWireIdx]) {
       const w = wires[selectedWireIdx];
       w.points.forEach((pt) => {
@@ -842,7 +878,6 @@
       terminalsLayer.appendChild(delBtn);
     }
 
-    // เส้นสายไฟที่กำลังลาก
     if (activeWirePoints.length > 0) {
       const d = activeWirePoints.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
       const preview = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -863,7 +898,6 @@
       });
     }
 
-    // วาดอุปกรณ์ทั้งหมด
     devices.forEach(dev => {
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       g.setAttribute('id', 'el_' + dev.id);
