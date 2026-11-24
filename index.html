@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Panel Designer - คุณเดียร์</title>
+  <title>Electrical Panel Studio - คุณเดียร์</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     body {
       margin: 0; padding: 0;
-      background-color: #121417;
+      background-color: #101216;
       color: #f0f0f0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       display: flex; flex-direction: column; height: 100vh; overflow: hidden;
@@ -16,143 +16,288 @@
 
     /* แถบเครื่องมือด้านบน */
     .topbar {
-      background: #1c1f24; padding: 10px 16px;
+      background: #181b20; padding: 8px 14px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #2c313a; z-index: 10;
+      border-bottom: 1px solid #2b303b; z-index: 20; gap: 8px; flex-wrap: wrap;
     }
-    .topbar h1 { font-size: 16px; margin: 0; color: #ff8c00; }
-    .wire-tools { display: flex; gap: 8px; align-items: center; }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .brand h1 { font-size: 15px; margin: 0; color: #ff8c00; white-space: nowrap; }
+    .tools { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
     .btn {
-      background: #2c313a; color: #fff; border: 1px solid #3e4451;
-      padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer;
+      background: #252a34; color: #e2e8f0; border: 1px solid #3a4150;
+      padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
     }
-    .btn.active { border-color: #ff8c00; background: #3a2e20; color: #ff8c00; font-weight: bold; }
+    .btn.active { border-color: #ff8c00; background: #3b2a1a; color: #ff8c00; font-weight: bold; }
+    .btn-danger { background: #4a1c1c; border-color: #7f2d2d; color: #fca5a5; }
     .color-dot {
-      width: 24px; height: 24px; border-radius: 50%; border: 2px solid #555; cursor: pointer;
+      width: 22px; height: 22px; border-radius: 50%; border: 2px solid #444; cursor: pointer;
     }
-    .color-dot.selected { border-color: #fff; transform: scale(1.15); }
+    .color-dot.selected { border-color: #fff; transform: scale(1.18); box-shadow: 0 0 6px rgba(255,255,255,0.5); }
 
     /* พื้นที่กระดานกริด */
     .workspace {
       flex: 1; position: relative; overflow: auto;
+      background-color: #12151a;
       background-image: 
-        linear-gradient(to right, #1e2229 1px, transparent 1px),
-        linear-gradient(to bottom, #1e2229 1px, transparent 1px);
-      background-size: 20px 20px;
+        linear-gradient(to right, #1c2028 1px, transparent 1px),
+        linear-gradient(to bottom, #1c2028 1px, transparent 1px),
+        linear-gradient(to right, #242933 1px, transparent 1px),
+        linear-gradient(to bottom, #242933 1px, transparent 1px);
+      background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
     }
-    svg#canvas {
-      width: 1200px; height: 800px; display: block;
-    }
+    svg#canvas { width: 1800px; height: 1400px; display: block; }
 
-    /* แถบเลือกอุปกรณ์ด้านล่าง */
+    /* เมนูลอยตั้งค่าอุปกรณ์ที่เลือก */
+    .inspector {
+      position: fixed; top: 58px; right: 14px;
+      background: #1a1e24; border: 1px solid #ff8c00; border-radius: 10px;
+      padding: 12px; display: none; flex-direction: column; gap: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.7); z-index: 30; width: 210px;
+    }
+    .inspector-header {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; font-weight: bold; color: #ff8c00; border-bottom: 1px solid #2e3440; padding-bottom: 6px;
+    }
+    .inspector label { font-size: 11px; color: #94a3b8; }
+    .inspector select, .inspector input, .inspector button {
+      padding: 6px 8px; border-radius: 6px; background: #262b36; color: #fff;
+      border: 1px solid #3f4756; font-size: 12px; width: 100%;
+    }
+    .inspector .row-btns { display: flex; gap: 6px; }
+
+    /* แถบหมวดหมู่และคลังอุปกรณ์ด้านล่าง */
+    .bottom-panel {
+      background: #181b20; border-top: 1px solid #2b303b; z-index: 20;
+      display: flex; flex-direction: column;
+    }
+    .cat-tabs {
+      display: flex; gap: 4px; padding: 6px 10px 0; overflow-x: auto;
+      border-bottom: 1px solid #2b303b; background: #14171c;
+    }
+    .cat-tab {
+      padding: 6px 12px; font-size: 12px; color: #94a3b8; cursor: pointer;
+      border-radius: 6px 6px 0 0; white-space: nowrap; border: 1px solid transparent;
+    }
+    .cat-tab.active {
+      background: #181b20; color: #ff8c00; font-weight: bold;
+      border-color: #2b303b; border-bottom-color: #181b20;
+    }
     .dock {
-      background: #1c1f24; padding: 12px;
-      border-top: 1px solid #2c313a;
-      display: flex; gap: 12px; overflow-x: auto; align-items: center;
+      padding: 10px; display: flex; gap: 10px; overflow-x: auto; align-items: center; min-height: 82px;
     }
     .dock-item {
-      background: #252930; border: 1px solid #383e48; border-radius: 8px;
-      padding: 8px 14px; min-width: 110px; text-align: center; cursor: pointer;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: #222730; border: 1px solid #353c49; border-radius: 8px;
+      padding: 8px 10px; min-width: 96px; text-align: center; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0;
     }
-    .dock-item:active { background: #323842; border-color: #ff8c00; }
-    .dock-item span { font-size: 12px; color: #ccc; }
-
-    /* เมนูลอยเมื่อกดเลือกอุปกรณ์ */
-    .inspector {
-      position: fixed; top: 60px; right: 16px;
-      background: #1c1f24; border: 1px solid #ff8c00; border-radius: 8px;
-      padding: 12px; display: none; flex-direction: column; gap: 8px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 20; width: 180px;
-    }
-    .inspector select, .inspector button {
-      padding: 6px; border-radius: 4px; background: #2c313a; color: #fff; border: 1px solid #444;
-    }
+    .dock-item:active { background: #313846; border-color: #ff8c00; transform: scale(0.96); }
+    .dock-item .icon { font-size: 20px; line-height: 1; }
+    .dock-item span { font-size: 11px; color: #cbd5e1; white-space: nowrap; }
   </style>
 </head>
 <body>
 
   <!-- Top Bar -->
   <div class="topbar">
-    <h1>⚡ ตู้ไฟ DIY (โหมดเห็นภาพจริง)</h1>
-    <div class="wire-tools">
-      <button id="modeSelect" class="btn active" onclick="setMode('select')">✋ ลากอุปกรณ์</button>
+    <div class="brand">
+      <h1>⚡ Panel Studio</h1>
+    </div>
+    <div class="tools">
+      <button id="modeSelect" class="btn active" onclick="setMode('select')">✋ ย้าย/เลือก</button>
       <button id="modeWire" class="btn" onclick="setMode('wire')">〰️ เดินสายไฟ</button>
-      <div class="color-dot selected" style="background:#8B4513;" title="สาย L (น้ำตาล)" onclick="setWireColor('#8B4513', this)"></div>
-      <div class="color-dot" style="background:#1E90FF;" title="สาย N (ฟ้า)" onclick="setWireColor('#1E90FF', this)"></div>
-      <div class="color-dot" style="background:#32CD32;" title="สาย G (เขียว)" onclick="setWireColor('#32CD32', this)"></div>
-      <button class="btn" style="background:#5a1e1e;" onclick="clearAll()">ล้างกระดาน</button>
+      <div class="color-dot selected" style="background:#8B4513;" title="L (น้ำตาล)" onclick="setWireColor('#8B4513', this)"></div>
+      <div class="color-dot" style="background:#1E90FF;" title="N (ฟ้า)" onclick="setWireColor('#1E90FF', this)"></div>
+      <div class="color-dot" style="background:#2ecc71;" title="G (เขียว)" onclick="setWireColor('#2ecc71', this)"></div>
+      <div class="color-dot" style="background:#e74c3c;" title="L1/Control (แดง)" onclick="setWireColor('#e74c3c', this)"></div>
+      <div class="color-dot" style="background:#f1c40f;" title="L2 (เหลือง)" onclick="setWireColor('#f1c40f', this)"></div>
+      <button class="btn btn-danger" onclick="clearAll()">🗑️ ล้างกระดาน</button>
     </div>
   </div>
 
   <!-- Inspector Menu -->
   <div id="inspector" class="inspector">
-    <div style="font-size:13px; font-weight:bold; color:#ff8c00;">ตั้งค่าอุปกรณ์</div>
-    <label style="font-size:12px;">ขนาดแอมป์ (A):</label>
-    <select id="ampSelect" onchange="changeAmp(this.value)">
-      <option value="C63">C63 (63A)</option>
-      <option value="C50">C50 (50A)</option>
-      <option value="C32">C32 (32A)</option>
-      <option value="C20">C20 (20A)</option>
-      <option value="C16">C16 (16A)</option>
-      <option value="C10">C10 (10A)</option>
-    </select>
-    <button onclick="toggleBreakerState()">สับสวิตช์ ON / OFF</button>
-    <button style="background:#7a2222;" onclick="deleteSelected()">ลบอุปกรณ์นี้</button>
+    <div class="inspector-header">
+      <span id="inspTitle">ตั้งค่าอุปกรณ์</span>
+      <span style="cursor:pointer; color:#94a3b8;" onclick="closeInspector()">✕</span>
+    </div>
+
+    <div id="ampGroup">
+      <label>ขนาดพิกัดกระแส / ค่า:</label>
+      <select id="ampSelect" onchange="updateDeviceProp('amp', this.value)">
+        <option value="C100">C100 (100A)</option>
+        <option value="C63">C63 (63A)</option>
+        <option value="C50">C50 (50A)</option>
+        <option value="C40">C40 (40A)</option>
+        <option value="C32">C32 (32A)</option>
+        <option value="C25">C25 (25A)</option>
+        <option value="C20">C20 (20A)</option>
+        <option value="C16">C16 (16A)</option>
+        <option value="C10">C10 (10A)</option>
+        <option value="C6">C6 (6A)</option>
+      </select>
+    </div>
+
+    <div id="colorGroup" style="display:none;">
+      <label>สีหลอดไฟ / ปุ่มกด:</label>
+      <select id="lampColorSelect" onchange="updateDeviceProp('color', this.value)">
+        <option value="#2ecc71">สีเขียว (RUN / ON)</option>
+        <option value="#e74c3c">สีแดง (STOP / TRIP)</option>
+        <option value="#f1c40f">สีเหลือง (STANDBY)</option>
+        <option value="#3498db">สีน้ำเงิน (INFO)</option>
+      </select>
+    </div>
+
+    <div id="textGroup">
+      <label>ป้ายชื่อกำกับวงจร:</label>
+      <input type="text" id="labelInput" placeholder="เช่น ปั๊มบ่อ 1, ฮีตเตอร์" oninput="updateDeviceProp('label', this.value)">
+    </div>
+
+    <div id="widthGroup" style="display:none;">
+      <label>ความยาวราง / บัสบาร์ (ช่อง):</label>
+      <select id="slotSelect" onchange="updateDeviceProp('slots', parseInt(this.value))">
+        <option value="4">4 ช่อง</option>
+        <option value="6">6 ช่อง</option>
+        <option value="8">8 ช่อง</option>
+        <option value="12">12 ช่อง</option>
+        <option value="16">16 ช่อง</option>
+        <option value="20">20 ช่อง</option>
+      </select>
+    </div>
+
+    <div class="row-btns">
+      <button id="toggleBtn" onclick="toggleDeviceState()">สับ ON/OFF</button>
+      <button onclick="duplicateSelected()">คัดลอก</button>
+    </div>
+    <button class="btn-danger" onclick="deleteSelected()">ลบอุปกรณ์นี้</button>
   </div>
 
   <!-- Main Grid Canvas -->
-  <div class="workspace">
+  <div class="workspace" id="workspace" onclick="deselectAll(event)">
     <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
-      <!-- ราง DIN มาตรฐาน -->
-      <g id="din-rail" transform="translate(100, 220)">
-        <rect x="0" y="0" width="760" height="50" fill="#7f8c8d" rx="3"/>
-        <rect x="0" y="10" width="760" height="30" fill="#95a5a6"/>
-        <rect x="15" y="21" width="30" height="8" rx="4" fill="#1e2229"/>
-        <rect x="715" y="21" width="30" height="8" rx="4" fill="#1e2229"/>
-      </g>
-      <g id="wires-layer"></g>
+      <!-- Layer ลำดับจากล่างขึ้นบน -->
+      <g id="rails-layer"></g>
       <g id="devices-layer"></g>
+      <g id="wires-layer"></g>
       <g id="terminals-layer"></g>
     </svg>
   </div>
 
-  <!-- Bottom Component Dock -->
-  <div class="dock">
-    <div class="dock-item" onclick="addDevice('rcbo2p')">
-      <div style="font-size:20px;">🎛️</div>
-      <span>เมน RCBO 2P</span>
-    </div>
-    <div class="dock-item" onclick="addDevice('mcb1p')">
-      <div style="font-size:20px;">🔌</div>
-      <span>ลูกย่อย 1P</span>
-    </div>
-    <div class="dock-item" onclick="addDevice('terminal')">
-      <div style="font-size:20px;">🔩</div>
-      <span>บาร์ N / G</span>
-    </div>
+  <!-- Bottom Category & Component Dock -->
+  <div class="bottom-panel">
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="dock" id="componentDock"></div>
   </div>
 
 <script>
   const GRID = 20;
   let mode = 'select';
   let wireColor = '#8B4513';
+  let activeCategory = 'breakers';
   let devices = [];
   let wires = [];
   let selectedDeviceId = null;
   let wireStartPoint = null;
 
+  // ฐานข้อมูลหมวดหมู่อุปกรณ์ไฟฟ้าทั้งหมด
+  const CATALOG = {
+    breakers: {
+      name: '⚡ เบรกเกอร์/กันดูด',
+      items: [
+        { type: 'main2p', name: 'เมนเบรกเกอร์ 2P', icon: '🔲', defaultAmp: 'C63' },
+        { type: 'rcbo2p', name: 'กันดูด RCBO 2P', icon: '🛡️', defaultAmp: 'C63' },
+        { type: 'rcbo1pn', name: 'กันดูด 1P+N', icon: '🔰', defaultAmp: 'C32' },
+        { type: 'mcb1p', name: 'ลูกย่อย 1P', icon: '🔌', defaultAmp: 'C32' },
+        { type: 'mcb3p', name: 'เบรกเกอร์ 3P', icon: '🎛️', defaultAmp: 'C32' },
+        { type: 'fuse', name: 'ฟิวส์หลอด DIN', icon: '💊', defaultAmp: 'C10' }
+      ]
+    },
+    rails: {
+      name: '📏 ราง & บัสบาร์',
+      items: [
+        { type: 'din_rail', name: 'รางปีกนก DIN', icon: '➖', defaultSlots: 12 },
+        { type: 'comb_busbar', name: 'บัสบาร์หวี 1P', icon: ' combs', defaultSlots: 6 },
+        { type: 'bar_n', name: 'บาร์นิวทรัล (N)', icon: '🔵', defaultSlots: 6 },
+        { type: 'bar_g', name: 'บาร์กราวด์ (G)', icon: '🟢', defaultSlots: 6 },
+        { type: 'terminal_block', name: 'เทอร์มินอล 4 ช่อง', icon: '🔩' }
+      ]
+    },
+    control: {
+      name: '⚙️ ตู้คอนโทรล/รีเลย์',
+      items: [
+        { type: 'magnetic', name: 'แมกเนติกคอนแทคเตอร์', icon: '🧲', defaultAmp: 'C32' },
+        { type: 'overload', name: 'โอเวอร์โหลดรีเลย์', icon: '🌡️', defaultAmp: 'C16' },
+        { type: 'timer', name: 'ไทม์เมอร์ตั้งเวลา', icon: '⏱️' },
+        { type: 'relay8', name: 'รีเลย์ 8 ขา (24/220V)', icon: '📦' },
+        { type: 'phase_prot', name: 'ตัวป้องกันไฟตก/เกิน', icon: '📉' }
+      ]
+    },
+    panel_ui: {
+      name: '🚦 หน้าตู้ & มิเตอร์',
+      items: [
+        { type: 'pilot_lamp', name: 'ไพลอตแลมป์', icon: '💡', defaultColor: '#2ecc71' },
+        { type: 'push_btn', name: 'ปุ่มกด Push Button', icon: '🔘', defaultColor: '#2ecc71' },
+        { type: 'selector', name: 'ซีเล็คเตอร์สวิตช์', icon: '🔄' },
+        { type: 'digital_meter', name: 'ดิจิทัลโวลต์-แอมป์', icon: '📟' }
+      ]
+    },
+    loads: {
+      name: '💧 โหลด & ปลั๊ก/ปั๊ม',
+      items: [
+        { type: 'outlet_duplex', name: 'เต้ารับกราวด์คู่', icon: '🔌' },
+        { type: 'wall_switch', name: 'สวิตช์ทางเดียว', icon: ' switches' },
+        { type: 'water_pump', name: 'ปั๊มน้ำ (Pump)', icon: '🌊' },
+        { type: 'air_pump', name: 'ปั๊มลม (Air Pump)', icon: '🫧' },
+        { type: 'heater', name: 'ฮีตเตอร์ (Heater)', icon: '🔥' }
+      ]
+    },
+    labels: {
+      name: '🏷️ ป้ายกำกับ',
+      items: [
+        { type: 'label_tag', name: 'ป้ายชื่อวงจร', icon: '🏷️', defaultLabel: 'โซน 1' },
+        { type: 'box_frame', name: 'กรอบตู้ไฟ', icon: '⬜', defaultSlots: 12 }
+      ]
+    }
+  };
+
+  const railsLayer = document.getElementById('rails-layer');
   const devicesLayer = document.getElementById('devices-layer');
   const wiresLayer = document.getElementById('wires-layer');
   const terminalsLayer = document.getElementById('terminals-layer');
   const inspector = document.getElementById('inspector');
+
+  function initUI() {
+    const catTabs = document.getElementById('catTabs');
+    catTabs.innerHTML = '';
+    Object.keys(CATALOG).forEach(key => {
+      const tab = document.createElement('div');
+      tab.className = 'cat-tab' + (key === activeCategory ? ' active' : '');
+      tab.textContent = CATALOG[key].name;
+      tab.onclick = () => {
+        activeCategory = key;
+        initUI();
+      };
+      catTabs.appendChild(tab);
+    });
+
+    const dock = document.getElementById('componentDock');
+    dock.innerHTML = '';
+    CATALOG[activeCategory].items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'dock-item';
+      const displayIcon = item.icon.length > 3 ? '⚡' : item.icon;
+      card.innerHTML = `<div class="icon">${displayIcon}</div><span>${item.name}</span>`;
+      card.onclick = () => addDevice(item);
+      dock.appendChild(card);
+    });
+  }
 
   function setMode(newMode) {
     mode = newMode;
     document.getElementById('modeSelect').classList.toggle('active', mode === 'select');
     document.getElementById('modeWire').classList.toggle('active', mode === 'wire');
     wireStartPoint = null;
-    if (mode === 'wire') inspector.style.display = 'none';
+    if (mode === 'wire') closeInspector();
     render();
   }
 
@@ -162,109 +307,353 @@
     el.classList.add('selected');
   }
 
-  function snap(val) {
-    return Math.round(val / GRID) * GRID;
-  }
+  function snap(val) { return Math.round(val / GRID) * GRID; }
 
-  function addDevice(type) {
-    const id = 'dev_' + Date.now();
-    // วางเรียงต่อกันบนราง DIN (แกน Y = 160 เพื่อให้กึ่งกลางทับรางพอดี)
-    const offsetX = 140 + (devices.length * 60);
-    devices.push({
-      id,
-      type,
-      x: snap(offsetX),
-      y: type === 'terminal' ? 80 : 160,
-      amp: type === 'rcbo2p' ? 'C63' : 'C32',
+  function addDevice(itemSpec) {
+    const ws = document.getElementById('workspace');
+    const spawnX = snap(ws.scrollLeft + 120 + (devices.length % 5) * 40);
+    const spawnY = snap(ws.scrollTop + 120 + (devices.length % 4) * 40);
+
+    const newDev = {
+      id: 'dev_' + Date.now() + Math.random().toString(36).substr(2, 4),
+      type: itemSpec.type,
+      name: itemSpec.name,
+      x: spawnX,
+      y: spawnY,
+      amp: itemSpec.defaultAmp || 'C32',
+      color: itemSpec.defaultColor || '#2ecc71',
+      slots: itemSpec.defaultSlots || 8,
+      label: itemSpec.defaultLabel || '',
       isOn: true
-    });
+    };
+    devices.push(newDev);
+    selectedDeviceId = newDev.id;
+    showInspector(newDev);
+    saveData();
     render();
   }
 
   function render() {
+    railsLayer.innerHTML = '';
     devicesLayer.innerHTML = '';
     terminalsLayer.innerHTML = '';
     wiresLayer.innerHTML = '';
 
-    // 1. วาดสายไฟทั้งหมด
+    // วาดสายไฟทั้งหมด
     wires.forEach((w, idx) => {
       const pathData = calculateOrthogonalPath(w.x1, w.y1, w.x2, w.y2);
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', pathData);
       path.setAttribute('stroke', w.color);
-      path.setAttribute('stroke-width', '6');
+      path.setAttribute('stroke-width', '5');
       path.setAttribute('stroke-linecap', 'round');
       path.setAttribute('stroke-linejoin', 'round');
       path.setAttribute('fill', 'none');
       path.style.cursor = 'pointer';
-      path.onclick = () => {
+      path.onclick = (e) => {
+        e.stopPropagation();
         if (confirm('ลบเส้นสายไฟนี้?')) {
           wires.splice(idx, 1);
+          saveData();
           render();
         }
       };
       wiresLayer.appendChild(path);
     });
 
-    // 2. วาดอุปกรณ์ทั้งหมด
+    // วาดอุปกรณ์ทั้งหมด
     devices.forEach(dev => {
       const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       g.setAttribute('transform', `translate(${dev.x}, ${dev.y})`);
-      g.style.cursor = 'grab';
+      g.style.cursor = mode === 'select' ? 'grab' : 'default';
 
       const isSelected = dev.id === selectedDeviceId;
-      const strokeColor = isSelected ? '#ff8c00' : '#222';
+      const stroke = isSelected ? '#ff8c00' : '#222';
+      const sw = isSelected ? 3 : 1.5;
 
-      if (dev.type === 'rcbo2p') {
-        // วาด RCBO 2P (กว้าง 80px สูง 170px)
-        g.innerHTML = `
-          <rect x="0" y="0" width="80" height="170" rx="4" fill="#e6e9ef" stroke="${strokeColor}" stroke-width="${isSelected?3:1.5}"/>
-          <rect x="0" y="45" width="80" height="6" fill="#d9381e"/>
-          <!-- ป้ายแอมป์ -->
-          <rect x="18" y="60" width="44" height="20" rx="2" fill="#1a1a1a"/>
-          <text x="40" y="75" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">${dev.amp}</text>
-          <!-- ช่องสถานะสีเขียว/แดง -->
-          <rect x="14" y="115" width="16" height="7" rx="1" fill="${dev.isOn ? '#2ecc71' : '#e74c3c'}"/>
-          <rect x="50" y="115" width="16" height="7" rx="1" fill="${dev.isOn ? '#2ecc71' : '#e74c3c'}"/>
-          <!-- คันโยกสวิตช์ -->
-          <rect x="10" y="${dev.isOn ? 88 : 98}" width="60" height="14" rx="2" fill="#2c3e50"/>
-          <!-- หัวน็อตขั้วบน-ล่าง -->
-          ${drawScrew(20, 20)} ${drawScrew(60, 20)}
-          ${drawScrew(20, 150)} ${drawScrew(60, 150)}
-        `;
-        createTerminalPoints(dev, [
-          { dx: 20, dy: 20 }, { dx: 60, dy: 20 },
-          { dx: 20, dy: 150 }, { dx: 60, dy: 150 }
-        ]);
-      } 
-      else if (dev.type === 'mcb1p') {
-        // วาด MCB 1P (กว้าง 40px สูง 170px)
-        g.innerHTML = `
-          <rect x="0" y="0" width="40" height="170" rx="4" fill="#e6e9ef" stroke="${strokeColor}" stroke-width="${isSelected?3:1.5}"/>
-          <rect x="0" y="45" width="40" height="6" fill="#d9381e"/>
-          <rect x="4" y="60" width="32" height="20" rx="2" fill="#1a1a1a"/>
-          <text x="20" y="75" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${dev.amp}</text>
-          <rect x="12" y="115" width="16" height="7" rx="1" fill="${dev.isOn ? '#2ecc71' : '#e74c3c'}"/>
-          <rect x="6" y="${dev.isOn ? 88 : 98}" width="28" height="14" rx="2" fill="#2c3e50"/>
-          ${drawScrew(20, 20)}
-          ${drawScrew(20, 150)}
-        `;
-        createTerminalPoints(dev, [
-          { dx: 20, dy: 20 }, { dx: 20, dy: 150 }
-        ]);
-      }
-      else if (dev.type === 'terminal') {
-        // บาร์เทอร์มินอล 4 ช่อง
-        g.innerHTML = `
-          <rect x="0" y="0" width="120" height="36" rx="4" fill="#2980b9" stroke="${strokeColor}" stroke-width="${isSelected?3:1.5}"/>
-          ${drawScrew(20, 18)} ${drawScrew(46, 18)} ${drawScrew(74, 18)} ${drawScrew(100, 18)}
-        `;
-        createTerminalPoints(dev, [
-          { dx: 20, dy: 18 }, { dx: 46, dy: 18 }, { dx: 74, dy: 18 }, { dx: 100, dy: 18 }
-        ]);
+      let pins = [];
+
+      switch (dev.type) {
+        case 'din_rail': {
+          const w = dev.slots * 40;
+          g.innerHTML = `
+            <rect x="0" y="0" width="${w}" height="46" fill="#64748b" stroke="${stroke}" stroke-width="${sw}" rx="3"/>
+            <rect x="0" y="9" width="${w}" height="28" fill="#94a3b8"/>
+            <rect x="10" y="19" width="24" height="8" rx="4" fill="#1e293b"/>
+            <rect x="${w-34}" y="19" width="24" height="8" rx="4" fill="#1e293b"/>
+          `;
+          railsLayer.appendChild(g);
+          setupDrag(g, dev);
+          return;
+        }
+        case 'box_frame': {
+          const w = dev.slots * 45;
+          const h = 360;
+          g.innerHTML = `
+            <rect x="0" y="0" width="${w}" height="${h}" fill="rgba(30,41,59,0.25)" stroke="${isSelected ? '#ff8c00' : '#475569'}" stroke-width="3" rx="8"/>
+            <text x="12" y="22" fill="#94a3b8" font-size="13" font-weight="bold">${dev.label || 'ตู้ควบคุมไฟฟ้า'}</text>
+          `;
+          railsLayer.appendChild(g);
+          setupDrag(g, dev);
+          return;
+        }
+        case 'main2p':
+        case 'rcbo2p': {
+          const isRcbo = dev.type === 'rcbo2p';
+          g.innerHTML = `
+            <rect x="0" y="0" width="80" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="0" y="42" width="80" height="6" fill="${isRcbo ? '#2563eb' : '#dc2626'}"/>
+            <rect x="16" y="56" width="48" height="20" rx="2" fill="#0f172a"/>
+            <text x="40" y="70" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${dev.amp}</text>
+            ${isRcbo ? `<circle cx="64" cy="95" r="7" fill="#facc15" stroke="#854d0e"/><text x="64" y="98" font-size="8" font-weight="bold" text-anchor="middle" fill="#000">T</text>` : ''}
+            <rect x="10" y="${dev.isOn ? 86 : 98}" width="${isRcbo ? 42 : 60}" height="14" rx="2" fill="#1e293b"/>
+            <rect x="14" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+            <rect x="46" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+            ${drawScrew(20, 20)} ${drawScrew(60, 20)}
+            ${drawScrew(20, 150)} ${drawScrew(60, 150)}
+            ${drawBadge(40, 184, dev.label)}
+          `;
+          pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:20,dy:150},{dx:60,dy:150}];
+          break;
+        }
+        case 'rcbo1pn':
+        case 'mcb1p': {
+          const isRcbo = dev.type === 'rcbo1pn';
+          g.innerHTML = `
+            <rect x="0" y="0" width="40" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="0" y="42" width="40" height="6" fill="${isRcbo ? '#2563eb' : '#dc2626'}"/>
+            <rect x="4" y="56" width="32" height="20" rx="2" fill="#0f172a"/>
+            <text x="20" y="70" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">${dev.amp}</text>
+            <rect x="6" y="${dev.isOn ? 86 : 98}" width="28" height="14" rx="2" fill="#1e293b"/>
+            <rect x="12" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+            ${drawScrew(20, 20)} ${drawScrew(20, 150)}
+            ${drawBadge(20, 184, dev.label)}
+          `;
+          pins = [{dx:20,dy:20},{dx:20,dy:150}];
+          break;
+        }
+        case 'mcb3p': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="120" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="0" y="42" width="120" height="6" fill="#dc2626"/>
+            <rect x="36" y="56" width="48" height="20" rx="2" fill="#0f172a"/>
+            <text x="60" y="70" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${dev.amp}</text>
+            <rect x="10" y="${dev.isOn ? 86 : 98}" width="100" height="14" rx="2" fill="#1e293b"/>
+            <rect x="14" y="118" width="16" height="7" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+            <rect x="52" y="118" width="16" height="7" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+            <rect x="90" y="118" width="16" height="7" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+            ${drawScrew(20, 20)} ${drawScrew(60, 20)} ${drawScrew(100, 20)}
+            ${drawScrew(20, 150)} ${drawScrew(60, 150)} ${drawScrew(100, 150)}
+            ${drawBadge(60, 184, dev.label)}
+          `;
+          pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:100,dy:20},{dx:20,dy:150},{dx:60,dy:150},{dx:100,dy:150}];
+          break;
+        }
+        case 'fuse': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="40" height="150" rx="4" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="8" y="48" width="24" height="54" rx="4" fill="#334155"/>
+            <text x="20" y="79" fill="#facc15" font-size="10" font-weight="bold" text-anchor="middle">${dev.amp}</text>
+            ${drawScrew(20, 20)} ${drawScrew(20, 130)}
+          `;
+          pins = [{dx:20,dy:20},{dx:20,dy:130}];
+          break;
+        }
+        case 'comb_busbar': {
+          const w = dev.slots * 40;
+          let teeth = '';
+          for (let i = 0; i < dev.slots; i++) {
+            const px = 20 + i * 40;
+            teeth += `<rect x="${px-3}" y="-14" width="6" height="16" fill="#d97706"/>`;
+            pins.push({dx: px, dy: -10});
+          }
+          g.innerHTML = `
+            ${teeth}
+            <rect x="6" y="0" width="${w-12}" height="18" rx="3" fill="#b45309" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="${w/2}" y="13" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">BUSBAR 63A</text>
+          `;
+          break;
+        }
+        case 'bar_n':
+        case 'bar_g': {
+          const isG = dev.type === 'bar_g';
+          const w = dev.slots * 28 + 20;
+          let screws = '';
+          for (let i = 0; i < dev.slots; i++) {
+            const sx = 24 + i * 28;
+            screws += drawScrew(sx, 18);
+            pins.push({dx: sx, dy: 18});
+          }
+          g.innerHTML = `
+            <rect x="0" y="0" width="${w}" height="36" rx="4" fill="${isG ? '#16a34a' : '#2563eb'}" stroke="${stroke}" stroke-width="${sw}"/>
+            ${screws}
+          `;
+          break;
+        }
+        case 'terminal_block': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="120" height="44" rx="4" fill="#475569" stroke="${stroke}" stroke-width="${sw}"/>
+            ${drawScrew(20, 22)} ${drawScrew(46, 22)} ${drawScrew(74, 22)} ${drawScrew(100, 22)}
+          `;
+          pins = [{dx:20,dy:22},{dx:46,dy:22},{dx:74,dy:22},{dx:100,dy:22}];
+          break;
+        }
+        case 'magnetic': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="100" height="150" rx="5" fill="#334155" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="15" y="45" width="70" height="60" rx="4" fill="#1e293b"/>
+            <text x="50" y="70" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">MC ${dev.amp}</text>
+            <rect x="35" y="82" width="30" height="12" rx="2" fill="${dev.isOn ? '#22c55e' : '#64748b'}"/>
+            ${drawScrew(18, 20)} ${drawScrew(50, 20)} ${drawScrew(82, 20)}
+            ${drawScrew(18, 130)} ${drawScrew(50, 130)} ${drawScrew(82, 130)}
+            ${drawBadge(50, 164, dev.label)}
+          `;
+          pins = [{dx:18,dy:20},{dx:50,dy:20},{dx:82,dy:20},{dx:18,dy:130},{dx:50,dy:130},{dx:82,dy:130}];
+          break;
+        }
+        case 'overload': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="100" height="110" rx="5" fill="#475569" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="30" cy="45" r="14" fill="#0f172a" stroke="#94a3b8"/>
+            <text x="30" y="49" fill="#facc15" font-size="9" text-anchor="middle">${dev.amp}</text>
+            <rect x="60" y="34" width="24" height="22" rx="3" fill="#dc2626"/>
+            <text x="72" y="49" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle">RST</text>
+            ${drawScrew(20, 88)} ${drawScrew(50, 88)} ${drawScrew(80, 88)}
+          `;
+          pins = [{dx:20,dy:88},{dx:50,dy:88},{dx:80,dy:88}];
+          break;
+        }
+        case 'timer': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="80" height="150" rx="4" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="12" y="44" width="56" height="32" rx="3" fill="#84cc16" stroke="#365314"/>
+            <text x="40" y="65" fill="#0f172a" font-size="13" font-weight="bold" text-anchor="middle">08:00</text>
+            <circle cx="24" cy="96" r="5" fill="#334155"/><circle cx="40" cy="96" r="5" fill="#334155"/><circle cx="56" cy="96" r="5" fill="#dc2626"/>
+            ${drawScrew(20, 20)} ${drawScrew(60, 20)}
+            ${drawScrew(20, 130)} ${drawScrew(60, 130)}
+            ${drawBadge(40, 164, dev.label || 'TIMER')}
+          `;
+          pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:20,dy:130},{dx:60,dy:130}];
+          break;
+        }
+        case 'relay8': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="60" height="110" rx="4" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="10" y="32" width="40" height="46" rx="3" fill="rgba(56,189,248,0.25)" stroke="#38bdf8"/>
+            <text x="30" y="59" fill="#fff" font-size="10" text-anchor="middle">RELAY</text>
+            ${drawScrew(18, 16)} ${drawScrew(42, 16)}
+            ${drawScrew(18, 94)} ${drawScrew(42, 94)}
+          `;
+          pins = [{dx:18,dy:16},{dx:42,dy:16},{dx:18,dy:94},{dx:42,dy:94}];
+          break;
+        }
+        case 'phase_prot': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="60" height="150" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="10" y="45" width="40" height="24" rx="2" fill="#0f172a"/>
+            <text x="30" y="61" fill="#22c55e" font-size="11" font-weight="bold" text-anchor="middle">220V</text>
+            ${drawScrew(20, 20)} ${drawScrew(40, 20)}
+            ${drawScrew(20, 130)} ${drawScrew(40, 130)}
+          `;
+          pins = [{dx:20,dy:20},{dx:40,dy:20},{dx:20,dy:130},{dx:40,dy:130}];
+          break;
+        }
+        case 'pilot_lamp': {
+          g.innerHTML = `
+            <circle cx="30" cy="30" r="26" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="30" cy="30" r="18" fill="${dev.isOn ? dev.color : '#334155'}"/>
+            ${drawScrew(18, 66)} ${drawScrew(42, 66)}
+            ${drawBadge(30, 86, dev.label)}
+          `;
+          pins = [{dx:18,dy:66},{dx:42,dy:66}];
+          break;
+        }
+        case 'push_btn': {
+          g.innerHTML = `
+            <rect x="4" y="4" width="52" height="52" rx="8" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="30" cy="30" r="17" fill="${dev.color}" stroke="#0f172a" stroke-width="2"/>
+            ${drawScrew(18, 68)} ${drawScrew(42, 68)}
+            ${drawBadge(30, 88, dev.label)}
+          `;
+          pins = [{dx:18,dy:68},{dx:42,dy:68}];
+          break;
+        }
+        case 'selector': {
+          g.innerHTML = `
+            <rect x="4" y="4" width="52" height="52" rx="8" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="30" cy="30" r="18" fill="#334155"/>
+            <rect x="26" y="12" width="8" height="36" rx="3" fill="#f8fafc" transform="rotate(${dev.isOn ? 35 : -35} 30 30)"/>
+            ${drawScrew(18, 68)} ${drawScrew(42, 68)}
+            ${drawBadge(30, 88, dev.label || 'AUTO/MAN')}
+          `;
+          pins = [{dx:18,dy:68},{dx:42,dy:68}];
+          break;
+        }
+        case 'digital_meter': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="90" height="90" rx="6" fill="#0f172a" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="45" y="36" fill="#ef4444" font-size="18" font-weight="bold" text-anchor="middle">228V</text>
+            <text x="45" y="62" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">12.4A</text>
+            ${drawScrew(22, 102)} ${drawScrew(68, 102)}
+          `;
+          pins = [{dx:22,dy:102},{dx:68,dy:102}];
+          break;
+        }
+        case 'outlet_duplex': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="100" height="60" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
+            <circle cx="28" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
+            <rect x="21" y="22" width="4" height="10" fill="#0f172a"/><rect x="31" y="22" width="4" height="10" fill="#0f172a"/>
+            <circle cx="28" cy="38" r="3" fill="#0f172a"/>
+            <circle cx="72" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
+            <rect x="65" y="22" width="4" height="10" fill="#0f172a"/><rect x="75" y="22" width="4" height="10" fill="#0f172a"/>
+            <circle cx="72" cy="38" r="3" fill="#0f172a"/>
+            ${drawScrew(20, -12)} ${drawScrew(50, -12)} ${drawScrew(80, -12)}
+            ${drawBadge(50, 74, dev.label)}
+          `;
+          pins = [{dx:20,dy:-12},{dx:50,dy:-12},{dx:80,dy:-12}];
+          break;
+        }
+        case 'wall_switch': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="60" height="80" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
+            <rect x="18" y="18" width="24" height="44" rx="3" fill="${dev.isOn ? '#cbd5e1' : '#94a3b8'}" stroke="#64748b"/>
+            ${drawScrew(20, -12)} ${drawScrew(40, -12)}
+            ${drawBadge(30, 94, dev.label)}
+          `;
+          pins = [{dx:20,dy:-12},{dx:40,dy:-12}];
+          break;
+        }
+        case 'water_pump':
+        case 'air_pump':
+        case 'heater': {
+          const map = {
+            water_pump: { bg: '#0284c7', title: '💧 ปั๊มน้ำ' },
+            air_pump: { bg: '#0d9488', title: '🫧 ปั๊มลม' },
+            heater: { bg: '#dc2626', title: '🔥 ฮีตเตอร์' }
+          };
+          const info = map[dev.type];
+          g.innerHTML = `
+            <rect x="0" y="0" width="110" height="64" rx="10" fill="${info.bg}" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="55" y="30" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">${info.title}</text>
+            <text x="55" y="48" fill="#e0f2fe" font-size="11" text-anchor="middle">${dev.label || '220V AC'}</text>
+            ${drawScrew(35, -12)} ${drawScrew(75, -12)}
+          `;
+          pins = [{dx:35,dy:-12},{dx:75,dy:-12}];
+          break;
+        }
+        case 'label_tag': {
+          const text = dev.label || 'ป้ายชื่อวงจร';
+          const w = Math.max(80, text.length * 10 + 24);
+          g.innerHTML = `
+            <rect x="0" y="0" width="${w}" height="28" rx="4" fill="#facc15" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="${w/2}" y="19" fill="#0f172a" font-size="12" font-weight="bold" text-anchor="middle">${text}</text>
+          `;
+          break;
+        }
       }
 
-      // ระบบลากวาง (รองรับทั้งนิ้วสัมผัสและเมาส์)
+      createTerminalPoints(dev, pins);
       setupDrag(g, dev);
       devicesLayer.appendChild(g);
     });
@@ -272,9 +661,18 @@
 
   function drawScrew(cx, cy) {
     return `
-      <circle cx="${cx}" cy="${cy}" r="9" fill="#bdc3c7" stroke="#7f8c8d" stroke-width="1.5"/>
-      <line x1="${cx-4}" y1="${cy-4}" x2="${cx+4}" y2="${cy+4}" stroke="#555" stroke-width="2"/>
-      <line x1="${cx+4}" y1="${cy-4}" x2="${cx-4}" y2="${cy+4}" stroke="#555" stroke-width="2"/>
+      <circle cx="${cx}" cy="${cy}" r="8" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+      <line x1="${cx-3.5}" y1="${cy-3.5}" x2="${cx+3.5}" y2="${cy+3.5}" stroke="#334155" stroke-width="1.8"/>
+      <line x1="${cx+3.5}" y1="${cy-3.5}" x2="${cx-3.5}" y2="${cy+3.5}" stroke="#334155" stroke-width="1.8"/>
+    `;
+  }
+
+  function drawBadge(cx, cy, text) {
+    if (!text) return '';
+    const w = text.length * 8 + 14;
+    return `
+      <rect x="${cx - w/2}" y="${cy - 11}" width="${w}" height="16" rx="3" fill="#facc15"/>
+      <text x="${cx}" y="${cy + 1}" fill="#000" font-size="10" font-weight="bold" text-anchor="middle">${text}</text>
     `;
   }
 
@@ -286,7 +684,7 @@
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', absX);
       circle.setAttribute('cy', absY);
-      circle.setAttribute('r', '12');
+      circle.setAttribute('r', '11');
       const isStart = wireStartPoint && wireStartPoint.x === absX && wireStartPoint.y === absY;
       circle.setAttribute('fill', isStart ? '#ff8c00' : 'rgba(255, 140, 0, 0.35)');
       circle.setAttribute('stroke', '#ff8c00');
@@ -305,6 +703,7 @@
               x2: absX, y2: absY,
               color: wireColor
             });
+            saveData();
           }
           wireStartPoint = null;
           render();
@@ -314,16 +713,13 @@
     });
   }
 
-  // คำนวณเส้นหักมุม 90 องศาหลบตัวอุปกรณ์
   function calculateOrthogonalPath(x1, y1, x2, y2) {
-    // ถ้าเชื่อมจากด้านบนลงด้านล่าง (เช่น เมนลงลูกย่อย) ให้เดินอ้อมซ้ายหรือขวา
-    if (Math.abs(y1 - y2) > 80 && Math.abs(x1 - x2) < 120) {
-      const detourX = Math.min(x1, x2) - 40;
-      const topY = y1 - 35;
-      const botY = y2 + 35;
+    if (Math.abs(y1 - y2) > 90 && Math.abs(x1 - x2) < 120) {
+      const detourX = Math.min(x1, x2) - 36;
+      const topY = y1 - 30;
+      const botY = y2 + 30;
       return `M ${x1} ${y1} L ${x1} ${topY} L ${detourX} ${topY} L ${detourX} ${botY} L ${x2} ${botY} L ${x2} ${y2}`;
     }
-    // กรณีทั่วไป หักมุมกึ่งกลาง
     const midY = (y1 + y2) / 2;
     return `M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`;
   }
@@ -334,6 +730,7 @@
 
     const onStart = (e) => {
       if (mode !== 'select') return;
+      e.stopPropagation();
       isDragging = true;
       selectedDeviceId = dev.id;
       showInspector(dev);
@@ -342,6 +739,7 @@
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       startX = clientX; startY = clientY;
       origX = dev.x; origY = dev.y;
+      render();
     };
 
     const onMove = (e) => {
@@ -349,17 +747,17 @@
       e.preventDefault();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      dev.x = snap(origX + (clientX - startX));
-      // ถ้าลากใกล้ราง DIN (Y ระหว่าง 130-190) ให้ดูดติดรางอัตโนมัติ
-      let newY = snap(origY + (clientY - startY));
-      if (dev.type !== 'terminal' && newY >= 130 && newY <= 190) {
-        newY = 160;
-      }
-      dev.y = newY;
+      dev.x = Math.max(0, snap(origX + (clientX - startX)));
+      dev.y = Math.max(0, snap(origY + (clientY - startY)));
       render();
     };
 
-    const onEnd = () => { isDragging = false; };
+    const onEnd = () => {
+      if (isDragging) {
+        isDragging = false;
+        saveData();
+      }
+    };
 
     el.addEventListener('mousedown', onStart);
     el.addEventListener('touchstart', onStart, { passive: false });
@@ -371,40 +769,108 @@
 
   function showInspector(dev) {
     inspector.style.display = 'flex';
-    document.getElementById('ampSelect').value = dev.amp;
+    document.getElementById('inspTitle').textContent = dev.name;
+
+    const hasAmp = ['main2p','rcbo2p','rcbo1pn','mcb1p','mcb3p','fuse','magnetic','overload'].includes(dev.type);
+    const hasColor = ['pilot_lamp','push_btn'].includes(dev.type);
+    const hasSlots = ['din_rail','comb_busbar','bar_n','bar_g','box_frame'].includes(dev.type);
+
+    document.getElementById('ampGroup').style.display = hasAmp ? 'block' : 'none';
+    document.getElementById('colorGroup').style.display = hasColor ? 'block' : 'none';
+    document.getElementById('widthGroup').style.display = hasSlots ? 'block' : 'none';
+
+    if (hasAmp) document.getElementById('ampSelect').value = dev.amp;
+    if (hasColor) document.getElementById('lampColorSelect').value = dev.color;
+    if (hasSlots) document.getElementById('slotSelect').value = dev.slots;
+    document.getElementById('labelInput').value = dev.label || '';
   }
 
-  function changeAmp(val) {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    if (dev) { dev.amp = val; render(); }
-  }
-
-  function toggleBreakerState() {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    if (dev) { dev.isOn = !dev.isOn; render(); }
-  }
-
-  function deleteSelected() {
-    devices = devices.filter(d => d.id !== selectedDeviceId);
-    selectedDeviceId = null;
+  function closeInspector() {
     inspector.style.display = 'none';
+    selectedDeviceId = null;
     render();
   }
 
-  function clearAll() {
-    if (confirm('ล้างอุปกรณ์และสายไฟทั้งหมด?')) {
-      devices = []; wires = []; selectedDeviceId = null;
-      inspector.style.display = 'none';
+  function deselectAll(e) {
+    if (e.target.id === 'canvas' || e.target.id === 'workspace') {
+      closeInspector();
+    }
+  }
+
+  function updateDeviceProp(prop, val) {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    if (dev) {
+      dev[prop] = val;
+      saveData();
       render();
     }
   }
 
-  // สร้างชุดเริ่มต้นให้ดูเป็นตัวอย่างเหมือนในรูป (RCBO C63 + ลูกย่อย C32 x 2)
-  addDevice('rcbo2p');
-  addDevice('mcb1p');
-  addDevice('mcb1p');
-  devices[1].x = 220;
-  devices[2].x = 260;
+  function toggleDeviceState() {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    if (dev) {
+      dev.isOn = !dev.isOn;
+      saveData();
+      render();
+    }
+  }
+
+  function duplicateSelected() {
+    const dev = devices.find(d => d.id === selectedDeviceId);
+    if (dev) {
+      const copy = JSON.parse(JSON.stringify(dev));
+      copy.id = 'dev_' + Date.now();
+      copy.x += 40;
+      copy.y += 40;
+      devices.push(copy);
+      selectedDeviceId = copy.id;
+      showInspector(copy);
+      saveData();
+      render();
+    }
+  }
+
+  function deleteSelected() {
+    devices = devices.filter(d => d.id !== selectedDeviceId);
+    closeInspector();
+    saveData();
+    render();
+  }
+
+  function clearAll() {
+    if (confirm('ล้างอุปกรณ์และสายไฟทั้งหมดบนกระดาน?')) {
+      devices = [];
+      wires = [];
+      closeInspector();
+      saveData();
+      render();
+    }
+  }
+
+  function saveData() {
+    localStorage.setItem('dear_panel_devices', JSON.stringify(devices));
+    localStorage.setItem('dear_panel_wires', JSON.stringify(wires));
+  }
+
+  function loadData() {
+    const savedDev = localStorage.getItem('dear_panel_devices');
+    const savedWires = localStorage.getItem('dear_panel_wires');
+    if (savedDev) {
+      devices = JSON.parse(savedDev);
+      wires = savedWires ? JSON.parse(savedWires) : [];
+    } else {
+      // ชุดตัวอย่างเริ่มต้น
+      devices = [
+        { id: 'd1', type: 'din_rail', name: 'รางปีกนก DIN', x: 80, y: 200, slots: 10 },
+        { id: 'd2', type: 'rcbo2p', name: 'กันดูด RCBO 2P', x: 120, y: 140, amp: 'C63', isOn: true, label: 'เมนตู้บ่อปลา' },
+        { id: 'd3', type: 'mcb1p', name: 'ลูกย่อย 1P', x: 220, y: 140, amp: 'C32', isOn: true, label: 'ปั๊มน้ำ' },
+        { id: 'd4', type: 'mcb1p', name: 'ลูกย่อย 1P', x: 260, y: 140, amp: 'C32', isOn: true, label: 'ฮีตเตอร์' }
+      ];
+    }
+  }
+
+  initUI();
+  loadData();
   render();
 </script>
 </body>
