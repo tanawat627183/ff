@@ -6,8 +6,10 @@
   <meta name="theme-color" content="#181b20">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
-  <title>Panel & Pipe Studio Pro V6 - คุณเดียร์</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23181b20'/%3E%3Cpath d='M280 96L144 288h104l-24 128 144-192H264z' fill='%23ff8c00'/%3E%3C/svg%3E">
+  <title>Panel & Pipe Studio Pro - คุณเดียร์</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     html, body {
@@ -36,6 +38,7 @@
     }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn.active { border-color: #ff8c00; background: #3b2a1a; color: #ff8c00; font-weight: bold; }
+    .btn-install { background: #b45309; border-color: #f59e0b; color: #fff; font-weight: bold; }
     .btn-save { background: #1e3a8a; border-color: #3b82f6; color: #dbeafe; font-weight: bold; }
     .btn-bom { background: #065f46; border-color: #10b981; color: #d1fae5; font-weight: bold; }
     .btn-magic { background: #4c1d95; border-color: #8b5cf6; color: #ede9fe; }
@@ -200,6 +203,7 @@
   <div class="topbar">
     <div class="brand">
       <h1>⚡ Panel Studio</h1>
+      <button id="installBtn" class="btn btn-install" onclick="installPWA()">📲 ติดตั้ง</button>
       <select id="projectSelect" class="proj-select" onchange="switchProject(this.value)" title="เลือกโปรเจกต์"></select>
       <button class="btn" onclick="createNewProject()" title="สร้างโปรเจกต์ใหม่">➕ ใหม่</button>
       <button class="btn" onclick="renameCurrentProject()" title="เปลี่ยนชื่อโปรเจกต์">✏️</button>
@@ -423,8 +427,40 @@
   </div>
 
 <script>
+  // --- ระบบติดตั้ง PWA ลงเครื่อง ---
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('installBtn');
+
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}));
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'flex';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    installBtn.style.display = 'none';
+  });
+
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    installBtn.style.display = 'none';
+  }
+
+  async function installPWA() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+      }
+    } else {
+      alert('วิธีติดตั้งลงหน้าจอหลัก MatePad:\n\n1. แตะปุ่มจุด 3 จุด (⋮) มุมขวาบนของเบราว์เซอร์\n2. เลือก "เพิ่มลงในหน้าจอหลัก" (Add to Home screen)\n3. แนะนำเปิดผ่าน Kiwi Browser จะได้ทางลัดที่หมุนจอตามมือได้อิสระ 100% ครับ');
+    }
   }
 
   const measureCanvas = document.createElement('canvas');
@@ -611,7 +647,6 @@
     const breakerTypes = ['main2p','rcbo2p','rcbo4p','rcbo1pn','mcb1p','mcb3p','dc_mcb2p','spd','fuse'];
     const ignoreTypes = ['label_tag', 'box_frame'];
 
-    // 1. นับอุปกรณ์ & ท่อ
     const itemCounts = {};
     const pipeTotals = {};
     const breakersList = [];
@@ -632,7 +667,6 @@
       }
     });
 
-    // 2. คำนวณความยาวสายไฟตามชนิด/ขนาด/สี (สเกล 160px ≈ 1 เมตร)
     const wireTotals = {};
     const warnings = [];
 
@@ -648,7 +682,6 @@
       const key = `สาย ${wType} ${wSize} sq.mm. (${cName})`;
       wireTotals[key] = (wireTotals[key] || 0) + estMeters;
 
-      // ตรวจสอบความปลอดภัย: เช็กว่าปลายสายไปต่อเข้ากับเบรกเกอร์แอมป์เกินขนาดสายหรือไม่
       const maxAmp = WIRE_AMPACITY[wSize] || 21;
       const endpoints = [w.points[0], w.points[w.points.length - 1]];
       breakersList.forEach(brk => {
@@ -662,7 +695,6 @@
       });
     });
 
-    // สร้าง HTML ตารางสรุป
     let textLines = [`📋 รายการวัสดุโปรเจกต์: ${projects[currentProjectId]?.name || 'ตู้ควบคุมไฟฟ้า'}`];
     let html = '';
 
@@ -672,14 +704,14 @@
       html += `<div class="safety-box safety-ok"><strong>✅ ผลการตรวจสอบเบื้องต้น:</strong> ไม่พบจุดที่ขนาดสายไฟต่ำกว่าพิกัดเบรกเกอร์ (ควรตรวจสอบระยะเดินสายจริงหน้างานอีกครั้ง)</div>`;
     }
 
-    html += `<table class="bom-table"><thead><tr><th>รายการอุปกรณ์ / วัสดุ</th><th style="width:90px;">จำนวนรวม</th></tr></thead><tbody>`;
+    html += `<table class="bom-table"><thead><tr><th>รายการอุปกรณ์ / วัสดุ</th><th style="width:95px;">จำนวนรวม</th></tr></thead><tbody>`;
     Object.entries(itemCounts).forEach(([name, qty]) => {
       html += `<tr><td>${name}</td><td><strong>${qty} ชิ้น</strong></td></tr>`;
       textLines.push(`- ${name} : ${qty} ชิ้น`);
     });
     Object.entries(pipeTotals).forEach(([name, m]) => {
       const mFixed = m.toFixed(2);
-      const sticks = Math.ceil(m / 4); // ท่อมาตรฐานยาวเส้นละ 4 เมตร
+      const sticks = Math.ceil(m / 4);
       html += `<tr><td>${name}</td><td><strong>${mFixed} ม.</strong> (~${sticks} เส้น)</td></tr>`;
       textLines.push(`- ${name} : ${mFixed} เมตร (ประมาณ ${sticks} เส้น/4ม.)`);
     });
@@ -2068,7 +2100,6 @@
       projects = JSON.parse(savedProjs);
       currentProjectId = (savedActive && projects[savedActive]) ? savedActive : Object.keys(projects)[0];
     } else {
-      // ย้ายข้อมูลจาก V4/V5 เดิมของคุณเดียร์เข้ามาอัตโนมัติ ไม่หายแน่นอน
       const legacyDev = localStorage.getItem('dear_panel_v4_devices');
       const legacyWires = localStorage.getItem('dear_panel_v4_wires');
       projects = {
