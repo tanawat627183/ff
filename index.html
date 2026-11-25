@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='%23181b20'/%3E%3Cpath d='M280 96L144 288h104l-24 128 144-192H264z' fill='%23ff8c00'/%3E%3C/svg%3E">
-  <title>Panel & Pipe Studio Pro V7 - คุณเดียร์</title>
+  <title>Panel & Construction Studio V8 - คุณเดียร์</title>
   <style>
     * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
     html, body {
@@ -25,7 +25,7 @@
     .topbar {
       background: #181b20; padding: 6px 10px;
       display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid #2b303b; z-index: 30; gap: 6px; flex-wrap: wrap;
+      border-bottom: 1px solid #2b303b; z-index: 30; gap: 5px; flex-wrap: wrap;
       flex-shrink: 0;
     }
     .brand { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
@@ -46,7 +46,7 @@
     .btn-danger { background: #4a1c1c; border-color: #7f2d2d; color: #fca5a5; }
     .proj-select {
       background: #262b36; color: #ff8c00; border: 1px solid #ff8c00;
-      padding: 4px 6px; border-radius: 6px; font-size: 12px; font-weight: bold; max-width: 140px;
+      padding: 4px 6px; border-radius: 6px; font-size: 12px; font-weight: bold; max-width: 135px;
     }
     .color-dot {
       width: 19px; height: 19px; border-radius: 50%; border: 2px solid #444; cursor: pointer; flex-shrink: 0;
@@ -64,22 +64,22 @@
       padding: 4px 6px; border-radius: 5px; font-size: 12px;
     }
 
-    /* พื้นที่กระดานกริด */
+    /* พื้นที่กระดานกริดละเอียด 10px */
     .workspace {
       flex: 1; position: relative; overflow: auto;
       background-color: #12151a;
     }
     .canvas-scaler {
       transform-origin: 0 0;
-      width: 2800px; height: 2000px;
+      width: 3000px; height: 2200px;
       background-image: 
-        linear-gradient(to right, #1c2028 1px, transparent 1px),
-        linear-gradient(to bottom, #1c2028 1px, transparent 1px),
-        linear-gradient(to right, #242933 1px, transparent 1px),
-        linear-gradient(to bottom, #242933 1px, transparent 1px);
-      background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+        linear-gradient(to right, #191d24 1px, transparent 1px),
+        linear-gradient(to bottom, #191d24 1px, transparent 1px),
+        linear-gradient(to right, #232832 1px, transparent 1px),
+        linear-gradient(to bottom, #232832 1px, transparent 1px);
+      background-size: 10px 10px, 10px 10px, 50px 50px, 50px 50px;
     }
-    svg#canvas { width: 2800px; height: 2000px; display: block; }
+    svg#canvas { width: 3000px; height: 2200px; display: block; }
     .draggable-item, .wire-handle { touch-action: none; }
 
     /* แถบควบคุมซูมมุมซ้ายล่าง */
@@ -95,12 +95,12 @@
     }
     .zoom-pill span { font-size: 12px; color: #ff8c00; font-weight: bold; min-width: 40px; text-align: center; }
 
-    /* เมนูลอยตั้งค่าอุปกรณ์ที่เลือก */
+    /* เมนูลอยตั้งค่าอุปกรณ์ / กลุ่มที่เลือก */
     .inspector {
       position: fixed; top: 52px; right: 10px;
       background: #1a1e24; border: 1px solid #ff8c00; border-radius: 10px;
       padding: 10px; display: none; flex-direction: column; gap: 7px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.85); z-index: 40; width: 235px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.85); z-index: 40; width: 240px;
       max-height: calc(100dvh - 150px); overflow-y: auto;
     }
     .inspector-header {
@@ -130,7 +130,7 @@
     }
     .dpad-btn:active { background: #ff8c00 !important; color: #000 !important; }
 
-    /* หน้าต่าง Modal สรุปรายการวัสดุ (BOM) */
+    /* หน้าต่าง Modal BOM */
     .modal-backdrop {
       position: fixed; inset: 0; background: rgba(0,0,0,0.75);
       display: none; justify-content: center; align-items: center; z-index: 60; padding: 16px;
@@ -183,7 +183,7 @@
     .dock.collapsed { display: none; }
     .dock-item {
       background: #222730; border: 1px solid #353c49; border-radius: 8px;
-      padding: 6px 10px; min-width: 92px; text-align: center; cursor: pointer;
+      padding: 6px 10px; min-width: 94px; text-align: center; cursor: pointer;
       display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0;
     }
     .dock-item:active { background: #313846; border-color: #ff8c00; transform: scale(0.95); }
@@ -196,7 +196,7 @@
   <!-- Top Bar -->
   <div class="topbar">
     <div class="brand">
-      <h1>⚡ Panel Studio</h1>
+      <h1>⚡ Panel Studio V8</h1>
       <button id="installBtn" class="btn btn-install" onclick="installPWA()">📲 ติดตั้ง</button>
       <select id="projectSelect" class="proj-select" onchange="switchProject(this.value)" title="เลือกโปรเจกต์"></select>
       <button class="btn" onclick="createNewProject()" title="สร้างโปรเจกต์ใหม่">➕ ใหม่</button>
@@ -207,13 +207,14 @@
     </div>
     <div class="tools">
       <button id="modeSelect" class="btn active" onclick="setMode('select')">✋ ย้าย/เลือก</button>
-      <button id="modeAutoWire" class="btn" onclick="setMode('autowire')">⚡ สายหลบอุปกรณ์</button>
+      <button id="modeBoxSelect" class="btn" onclick="setMode('boxselect')">🔲 คลุมกลุ่ม</button>
+      <button id="modeAutoWire" class="btn" onclick="setMode('autowire')">⚡ สายหลบอัตโนมัติ</button>
       <button id="modeFreeWire" class="btn" onclick="setMode('freewire')">〰️ สายอิสระ</button>
-      <button class="btn btn-magic" onclick="autoTidyAllWires()">🪄 เรียงสายหลบอัตโนมัติ</button>
-      <button class="btn btn-bom" onclick="openBOMModal()">📋 สรุปวัสดุ & เช็กไฟ</button>
+      <button class="btn btn-magic" onclick="autoTidyAllWires()">🪄 เรียงสาย</button>
+      <button class="btn btn-bom" onclick="openBOMModal()">📋 สรุปวัสดุ</button>
       <button class="btn btn-save" onclick="exportToPNG()">📸 บันทึกภาพ</button>
-      <button class="btn" onclick="exportProjectJSON()" title="ส่งออกไฟล์โปรเจกต์">💾 JSON</button>
-      <button class="btn" onclick="document.getElementById('importFile').click()" title="นำเข้าไฟล์โปรเจกต์">📂 เปิด</button>
+      <button class="btn" onclick="exportProjectJSON()">💾 JSON</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">📂 เปิด</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importProjectJSON(event)">
       <button class="btn btn-danger" onclick="clearAll()">🗑️</button>
     </div>
@@ -239,14 +240,14 @@
         <option value="PV1-F">PV1-F (โซลาร์เซลล์)</option>
       </select>
       <select id="wireSizeSelect">
-        <option value="1.5">1.5 sq.mm. (รับได้ ~15A)</option>
-        <option value="2.5" selected>2.5 sq.mm. (รับได้ ~21A)</option>
-        <option value="4">4.0 sq.mm. (รับได้ ~28A)</option>
-        <option value="6">6.0 sq.mm. (รับได้ ~36A)</option>
-        <option value="10">10 sq.mm. (รับได้ ~50A)</option>
-        <option value="16">16 sq.mm. (รับได้ ~68A)</option>
-        <option value="25">25 sq.mm. (รับได้ ~89A)</option>
-        <option value="35">35 sq.mm. (รับได้ ~110A)</option>
+        <option value="1.5">1.5 sq.mm. (~15A)</option>
+        <option value="2.5" selected>2.5 sq.mm. (~21A)</option>
+        <option value="4">4.0 sq.mm. (~28A)</option>
+        <option value="6">6.0 sq.mm. (~36A)</option>
+        <option value="10">10 sq.mm. (~50A)</option>
+        <option value="16">16 sq.mm. (~68A)</option>
+        <option value="25">25 sq.mm. (~89A)</option>
+        <option value="35">35 sq.mm. (~110A)</option>
       </select>
     </div>
 
@@ -271,12 +272,19 @@
       <span style="cursor:pointer; color:#94a3b8; padding:0 4px;" onclick="closeInspector()">✕</span>
     </div>
 
+    <!-- ปุ่มรวมกลุ่ม / แยกกลุ่ม -->
+    <div id="groupActionBox" class="row-btns">
+      <button id="btnGroup" class="btn-success" onclick="groupSelectedItems()">🔗 รวมกลุ่มที่เลือก</button>
+      <button id="btnUngroup" onclick="ungroupSelectedItems()">🔓 แยกกลุ่ม</button>
+    </div>
+
     <!-- แผงปุ่มลูกศรเลื่อนตำแหน่ง -->
     <div class="dpad-box">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:11px; color:#94a3b8;">ปุ่มลูกศรเลื่อน:</span>
         <select id="nudgeStep" style="width:auto; padding:2px 4px; font-size:11px;">
-          <option value="20">1 ช่อง (20px)</option>
+          <option value="10">1 ช่อง (10px)</option>
+          <option value="20">2 ช่อง (20px)</option>
           <option value="5">ละเอียด (5px)</option>
         </select>
       </div>
@@ -290,8 +298,18 @@
       </div>
     </div>
 
+    <!-- มุมมองอุปกรณ์ (หน้า / หลัง / ข้าง) -->
+    <div id="viewFaceGroup">
+      <label>👁️ มุมมองอุปกรณ์ (หน้า / หลัง / ข้าง):</label>
+      <select id="viewFaceSelect" onchange="updateDeviceProp('viewFace', this.value)">
+        <option value="front">ด้านหน้า (Front View)</option>
+        <option value="back">ด้านหลัง / ขั้วต่อสายหลัง (Rear View)</option>
+        <option value="side">ด้านข้าง / ตัดขวาง (Side View)</option>
+      </select>
+    </div>
+
     <!-- หมุนองศาอิสระ -->
-    <div>
+    <div id="rotGroup">
       <div style="display:flex; justify-content:space-between;">
         <label>มุมหมุนอิสระ:</label>
         <span id="rotDegLabel" style="font-size:11px; color:#ff8c00; font-weight:bold;">0°</span>
@@ -303,9 +321,9 @@
       </div>
     </div>
 
-    <!-- ตั้งค่าท่อ: ขนาดหุน และ ความยาว -->
+    <!-- ตั้งค่าท่อ / ผนัง: ขนาด และ ความยาว -->
     <div id="pipeSpecGroup" style="display:none; flex-direction:column; gap:6px;">
-      <div>
+      <div id="pipeSizeBox">
         <label>ขนาดท่อ (หุน / นิ้ว):</label>
         <select id="pipeSizeSelect" onchange="updateDeviceProp('pipeSize', this.value)">
           <option value="3 หุน">3 หุน (3/8" - 16มม.)</option>
@@ -318,7 +336,7 @@
         </select>
       </div>
       <div id="pipeLenBox">
-        <label>ความยาวท่อ / ราง:</label>
+        <label>ความยาว / ขนาดโครงสร้าง:</label>
         <div class="row-2">
           <input type="number" id="pipeLenInput" step="0.1" min="0.1" value="1" oninput="updatePipeLength()">
           <select id="pipeUnitSelect" onchange="updatePipeLength()">
@@ -359,7 +377,7 @@
 
     <div id="textGroup">
       <label>ป้ายชื่อ / มาร์คสาย:</label>
-      <input type="text" id="labelInput" placeholder="เช่น L1, ปั๊มน้ำบ่อ 1" oninput="updateDeviceProp('label', this.value)">
+      <input type="text" id="labelInput" placeholder="เช่น L1, ผนังห้องปั๊ม" oninput="updateDeviceProp('label', this.value)">
     </div>
 
     <div id="widthGroup" style="display:none;">
@@ -378,7 +396,7 @@
       <button onclick="toggleDeviceState()">⚡ ON/OFF</button>
       <button onclick="duplicateSelected()">📋 คัดลอก</button>
     </div>
-    <button class="btn-danger" onclick="deleteSelected()">🗑️ ลบอุปกรณ์นี้</button>
+    <button class="btn-danger" onclick="deleteSelected()">🗑️ ลบที่เลือก</button>
   </div>
 
   <!-- BOM & Safety Modal -->
@@ -400,6 +418,7 @@
   <div class="workspace" id="workspace">
     <div class="canvas-scaler" id="canvasScaler">
       <svg id="canvas" xmlns="http://www.w3.org/2000/svg">
+        <g id="arch-layer"></g>
         <g id="center-guides-layer"></g>
         <g id="pipes-layer"></g>
         <g id="rails-layer"></g>
@@ -407,6 +426,7 @@
         <g id="wires-layer"></g>
         <g id="snap-guides-layer"></g>
         <g id="terminals-layer"></g>
+        <rect id="selectionMarquee" x="0" y="0" width="0" height="0" fill="rgba(255, 140, 0, 0.15)" stroke="#ff8c00" stroke-width="1.5" stroke-dasharray="6,4" style="display:none;"/>
       </svg>
     </div>
   </div>
@@ -459,20 +479,24 @@
   let projects = {};
   let currentProjectId = 'proj_default';
 
-  const GRID = 20;
+  const GRID = 10; // กริดละเอียด 10px
   let zoomScale = 1.0;
   let showCenterLines = true;
-  let mode = 'select';
+  let mode = 'select'; // 'select' | 'boxselect' | 'autowire' | 'freewire'
   let wireColor = '#8B4513';
-  let activeCategory = 'breakers';
+  let activeCategory = 'prefab_cu';
   let devices = [];
   let wires = [];
-  let selectedDeviceId = null;
+  let selectedIds = new Set(); // รองรับการเลือกหลายชิ้นพร้อมกัน
   let selectedWireIdx = null;
   let activeWirePoints = [];
 
   let dragState = {
-    type: null, target: null, domEl: null, pointerId: null,
+    type: null, // 'devices' | 'wireNode' | 'marquee'
+    itemsSnapshot: [],
+    target: null,
+    domEl: null,
+    pointerId: null,
     startX: 0, startY: 0, origX: 0, origY: 0, hasMoved: false
   };
 
@@ -499,6 +523,28 @@
   };
 
   const CATALOG = {
+    prefab_cu: {
+      name: '📦 ตู้คอนซูเมอร์สำเร็จรูป',
+      items: [
+        { type: 'cu_prefab', name: 'ตู้คอนซูเมอร์ 3 ช่อง', icon: '📦', prefabSlots: 3 },
+        { type: 'cu_prefab', name: 'ตู้คอนซูเมอร์ 4 ช่อง', icon: '📦', prefabSlots: 4 },
+        { type: 'cu_prefab', name: 'ตู้คอนซูเมอร์ 5 ช่อง', icon: '📦', prefabSlots: 5 },
+        { type: 'cu_prefab', name: 'ตู้คอนซูเมอร์ 6 ช่อง', icon: '📦', prefabSlots: 6 },
+        { type: 'cu_prefab', name: 'ตู้คอนซูเมอร์ 8 ช่อง', icon: '📦', prefabSlots: 8 }
+      ]
+    },
+    construction: {
+      name: '🧱 ก่อสร้าง & ผนัง',
+      items: [
+        { type: 'wall_aac', name: 'ผนังอิฐมวลเบา', icon: '⬜', pipeLen: 2, pipeUnit: 'เมตร' },
+        { type: 'wall_brick', name: 'ผนังอิฐมอญแดง', icon: '🧱', pipeLen: 2, pipeUnit: 'เมตร' },
+        { type: 'wall_concrete', name: 'ผนังปูนฉาบ/คาน', icon: '🏢', pipeLen: 2, pipeUnit: 'เมตร' },
+        { type: 'pillar_concrete', name: 'เสาปูนคอนกรีต', icon: '🏛️', pipeLen: 30, pipeUnit: 'เซนติเมตร' },
+        { type: 'floor_slab', name: 'พื้นปูน/แผ่นพื้น', icon: '⬛', pipeLen: 2.5, pipeUnit: 'เมตร' },
+        { type: 'ceiling_gyp', name: 'ฝ้าเพดานยิปซั่ม', icon: '➖', pipeLen: 2.5, pipeUnit: 'เมตร' },
+        { type: 'wall_chase', name: 'แนวกรีดผนังฝังท่อ', icon: '🪚', pipeLen: 1.5, pipeUnit: 'เมตร' }
+      ]
+    },
     breakers: {
       name: '⚡ เบรกเกอร์/กันดูด',
       items: [
@@ -623,6 +669,7 @@
     }
   };
 
+  const archLayer = document.getElementById('arch-layer');
   const centerGuidesLayer = document.getElementById('center-guides-layer');
   const snapGuidesLayer = document.getElementById('snap-guides-layer');
   const pipesLayer = document.getElementById('pipes-layer');
@@ -630,17 +677,65 @@
   const devicesLayer = document.getElementById('devices-layer');
   const wiresLayer = document.getElementById('wires-layer');
   const terminalsLayer = document.getElementById('terminals-layer');
+  const marqueeRect = document.getElementById('selectionMarquee');
   const inspector = document.getElementById('inspector');
   const canvas = document.getElementById('canvas');
   const canvasScaler = document.getElementById('canvasScaler');
   const zoomPill = document.getElementById('zoomPill');
 
   // =========================================================================
-  // ระบบ A* Obstacle-Aware Auto-Routing (เดินสายหลบตัวอุปกรณ์ & ไม่ทับกัน)
+  // ฟังก์ชันสร้างชุดตู้คอนซูเมอร์สำเร็จรูป (3, 4, 5, 6, 8 ช่อง)
+  // =========================================================================
+  function spawnPrefabConsumerUnit(slotCount, baseX, baseY) {
+    const groupId = 'grp_' + Date.now();
+    const totalSlots = slotCount + 3; // เมน 2P + ลูกย่อย + พื้นที่บาร์ N/G
+    const boxSlots = Math.max(8, Math.ceil((totalSlots * 40 + 100) / 45));
+
+    const newBatch = [];
+    // 1. กรอบตู้
+    newBatch.push({
+      id: 'dev_' + Date.now() + '_box', groupId, type: 'box_frame', name: `ตู้คอนซูเมอร์ ${slotCount} ช่อง`,
+      x: baseX, y: baseY, rot: 0, slots: boxSlots, label: `ตู้คอนซูเมอร์ยูนิต ${slotCount} ช่อง`
+    });
+    // 2. ราง DIN
+    newBatch.push({
+      id: 'dev_' + Date.now() + '_rail', groupId, type: 'din_rail', name: 'รางปีกนก DIN',
+      x: baseX + 20, y: baseY + 130, rot: 0, slots: slotCount + 3
+    });
+    // 3. เมน RCBO 2P C63
+    newBatch.push({
+      id: 'dev_' + Date.now() + '_main', groupId, type: 'rcbo2p', name: 'กันดูด RCBO 2P',
+      x: baseX + 40, y: baseY + 70, rot: 0, amp: 'C63', isOn: true, label: 'เมน RCBO'
+    });
+    // 4. ลูกย่อย MCB 1P ตามจำนวนช่อง
+    const defaultAmps = ['C32', 'C20', 'C20', 'C16', 'C16', 'C10', 'C10', 'C10'];
+    for (let i = 0; i < slotCount; i++) {
+      newBatch.push({
+        id: 'dev_' + Date.now() + '_mcb_' + i, groupId, type: 'mcb1p', name: 'ลูกย่อย 1P',
+        x: baseX + 130 + (i * 40), y: baseY + 70, rot: 0, amp: defaultAmps[i] || 'C16', isOn: true, label: `ช่อง ${i+1}`
+      });
+    }
+    // 5. บาร์ N และ บาร์ G ด้านบนขวา
+    const barX = baseX + 140 + (slotCount * 40);
+    newBatch.push({
+      id: 'dev_' + Date.now() + '_barn', groupId, type: 'bar_n', name: 'บาร์นิวทรัล (N)',
+      x: barX, y: baseY + 60, rot: 90, slots: slotCount + 2
+    });
+    newBatch.push({
+      id: 'dev_' + Date.now() + '_barg', groupId, type: 'bar_g', name: 'บาร์กราวด์ (G)',
+      x: barX + 40, y: baseY + 60, rot: 90, slots: slotCount + 2
+    });
+
+    devices.push(...newBatch);
+    selectedIds = new Set(newBatch.map(d => d.id));
+    updateInspectorUI();
+  }
+
+  // =========================================================================
+  // A* Obstacle-Aware Auto-Routing บนกริดละเอียด 10px (ไม่พัน ไม่ทับอุปกรณ์)
   // =========================================================================
   function getDeviceObstacleBox(dev) {
-    // ไม่นับกรอบตู้, ราง DIN, ป้ายกำกับ, ปลอกไวนัส เป็นสิ่งกีดขวางสายไฟ
-    const nonBlocking = ['box_frame', 'din_rail', 'label_tag', 'vinus_tag'];
+    const nonBlocking = ['box_frame', 'din_rail', 'label_tag', 'vinus_tag', 'wall_aac', 'wall_brick', 'wall_concrete', 'floor_slab', 'ceiling_gyp', 'wall_chase'];
     if (nonBlocking.includes(dev.type)) return null;
 
     let w = 60, h = 60;
@@ -648,44 +743,43 @@
     else if (dev.type === 'rcbo4p') { w = 160; h = 150; }
     else if (['rcbo1pn', 'mcb1p', 'fuse'].includes(dev.type)) { w = 40; h = 150; }
     else if (dev.type === 'mcb3p') { w = 120; h = 150; }
-    else if (['bar_n', 'bar_g', 'copper_bar'].includes(dev.type)) { w = dev.slots * 28 + 20; h = 36; }
+    else if (['bar_n', 'bar_g', 'copper_bar'].includes(dev.type)) {
+      if ((dev.rot || 0) % 180 === 90) { w = 36; h = dev.slots * 28 + 20; }
+      else { w = dev.slots * 28 + 20; h = 36; }
+    }
     else if (dev.type === 'comb_busbar') { w = dev.slots * 40; h = 20; }
-    else if (['outlet_duplex', 'outlet_wp', 'water_pump', 'air_pump', 'heater', 'float_switch', 'solenoid', 'air_con', 'water_heater', 'floodlight', 'street_lamp', 'gate_motor', 'lan_tv_outlet'].includes(dev.type)) { w = 100; h = 60; }
-    else if (['wall_switch', 'switch_2way', 'dimmer_sw', 'downlight', 'ceiling_fan', 'door_bell', 'pillar_lamp', 'photo_switch', 'pir_sensor', 'pilot_lamp', 'push_btn', 'emergency_btn', 'selector'].includes(dev.type)) { w = 60; h = 60; }
+    else if (['outlet_duplex', 'outlet_wp', 'water_pump', 'air_pump', 'heater', 'float_switch', 'solenoid', 'air_con', 'water_heater', 'floodlight', 'street_lamp', 'gate_motor', 'lan_tv_outlet', 'ceiling_fan', 'door_bell', 'pillar_lamp', 'photo_switch', 'pir_sensor'].includes(dev.type)) { w = 100; h = 60; }
+    else if (['wall_switch', 'switch_2way', 'dimmer_sw', 'downlight', 'pilot_lamp', 'push_btn', 'emergency_btn', 'selector'].includes(dev.type)) { w = 60; h = 60; }
     else if (dev.type === 'tube_led') { w = 160; h = 36; }
     else if (['magnetic', 'timer', 'ats', 'kwh_meter'].includes(dev.type)) { w = 100; h = 130; }
     else if (['overload', 'relay8', 'psu_12v', 'digital_meter', 'panel_fan', 'junction_box', 'waterproof_box'].includes(dev.type)) { w = 90; h = 90; }
     else return null;
 
-    // เผื่อระยะห่างรอบตัวอุปกรณ์ (Padding) 10px และเว้นช่วงหัว-ท้ายที่เป็นน็อตขั้วสายไว้ให้เข้าถึงได้
     return {
-      x1: dev.x + 6,
+      x1: dev.x + 8,
       y1: dev.y + 18,
-      x2: dev.x + w - 6,
-      y2: dev.y + h - 6
+      x2: dev.x + w - 8,
+      y2: dev.y + h - 8
     };
   }
 
   function findSmartObstacleFreeRoute(p1, p2, existingWires = []) {
-    const STEP = 20;
+    const STEP = 10; // กริดละเอียด 10px สายไม่ซ้อนกัน
     const sx = snap(p1.x), sy = snap(p1.y);
     const gx = snap(p2.x), gy = snap(p2.y);
 
     if (sx === gx && sy === gy) return [{ x: sx, y: sy }];
 
-    // สร้างกรอบขอบเขตการค้นหา (Bounding Window) รอบจุดเริ่มและจุดจบเพื่อความเร็วสูง
-    const minX = Math.max(0, Math.min(sx, gx) - 240);
-    const maxX = Math.min(2760, Math.max(sx, gx) + 240);
-    const minY = Math.max(0, Math.min(sy, gy) - 240);
-    const maxY = Math.min(1960, Math.max(sy, gy) + 240);
+    const minX = Math.max(0, Math.min(sx, gx) - 220);
+    const maxX = Math.min(2960, Math.max(sx, gx) + 220);
+    const minY = Math.max(0, Math.min(sy, gy) - 220);
+    const maxY = Math.min(2160, Math.max(sy, gy) + 220);
 
     const cols = Math.floor((maxX - minX) / STEP) + 1;
     const rows = Math.floor((maxY - minY) / STEP) + 1;
 
-    // เก็บกล่องสิ่งกีดขวางของอุปกรณ์ทั้งหมด
     const obstacles = devices.map(getDeviceObstacleBox).filter(Boolean);
 
-    // เก็บพิกัดเส้นสายไฟเดิมเพื่อหลีกเลี่ยงการวิ่งทับเส้นเดียวกัน
     const occupiedSegments = new Set();
     existingWires.forEach(w => {
       if (!w.points) return;
@@ -704,14 +798,11 @@
       if ((wx === sx && wy === sy) || (wx === gx && wy === gy)) return false;
       for (let i = 0; i < obstacles.length; i++) {
         const box = obstacles[i];
-        if (wx >= box.x1 && wx <= box.x2 && wy >= box.y1 && wy <= box.y2) {
-          return true;
-        }
+        if (wx >= box.x1 && wx <= box.x2 && wy >= box.y1 && wy <= box.y2) return true;
       }
       return false;
     }
 
-    // A* Search บนกริด 4 ทิศทาง (บังคับเดินฉาก 90 องศา + ลงโทษการเลี้ยวบ่อย + ลงโทษการทับสายเดิม)
     const startCol = Math.round((sx - minX) / STEP);
     const startRow = Math.round((sy - minY) / STEP);
     const goalCol = Math.round((gx - minX) / STEP);
@@ -719,19 +810,13 @@
 
     const openSet = [{ c: startCol, r: startRow, dir: -1, g: 0, f: Math.abs(goalCol - startCol) + Math.abs(goalRow - startRow), parent: null }];
     const visited = new Map();
-    const dirs = [
-      { dc: 1, dr: 0 },  // 0: ขวา
-      { dc: -1, dr: 0 }, // 1: ซ้าย
-      { dc: 0, dr: 1 },  // 2: ล่าง
-      { dc: 0, dr: -1 }  // 3: บน
-    ];
+    const dirs = [{ dc: 1, dr: 0 }, { dc: -1, dr: 0 }, { dc: 0, dr: 1 }, { dc: 0, dr: -1 }];
 
     let bestNode = null;
     let iterations = 0;
 
-    while (openSet.length > 0 && iterations < 4500) {
+    while (openSet.length > 0 && iterations < 8000) {
       iterations++;
-      // ดึงโหนดที่ค่า f ต่ำสุด
       let minIdx = 0;
       for (let i = 1; i < openSet.length; i++) {
         if (openSet[i].f < openSet[minIdx].f) minIdx = i;
@@ -756,10 +841,9 @@
         const wy = minY + nr * STEP;
         if (isBlocked(wx, wy)) continue;
 
-        // คิดต้นทุน: เดินตรง = 1, เลี้ยวหักมุม = +2.5, ทับสายไฟเส้นอื่น = +6
         let moveCost = 1;
-        if (curr.dir !== -1 && curr.dir !== d) moveCost += 2.5;
-        if (occupiedSegments.has(`${wx},${wy}`) && !(wx === gx && wy === gy)) moveCost += 6;
+        if (curr.dir !== -1 && curr.dir !== d) moveCost += 2.2;
+        if (occupiedSegments.has(`${wx},${wy}`) && !(wx === gx && wy === gy)) moveCost += 12; // หลบเส้นสายเดิมอย่างเข้มงวด
 
         const ng = curr.g + moveCost;
         const h = Math.abs(goalCol - nc) + Math.abs(goalRow - nr);
@@ -774,7 +858,6 @@
         rawPoints.unshift({ x: minX + ptr.c * STEP, y: minY + ptr.r * STEP });
         ptr = ptr.parent;
       }
-      // ยุบจุดที่อยู่บนเส้นตรงเดียวกันให้เหลือเฉพาะจุดหักมุมจริง
       const simplified = [rawPoints[0]];
       for (let i = 1; i < rawPoints.length - 1; i++) {
         const prev = simplified[simplified.length - 1];
@@ -788,7 +871,6 @@
       return simplified;
     }
 
-    // Fallback กรณีโดนล้อมปิดหมด
     const midY = snap((sy + gy) / 2);
     return [{ x: sx, y: sy }, { x: sx, y: midY }, { x: gx, y: midY }, { x: gx, y: gy }];
   }
@@ -799,16 +881,234 @@
     const routedWires = [];
     wires.forEach((w) => {
       if (w.points && w.points.length >= 2) {
-        const start = w.points[0];
-        const end = w.points[w.points.length - 1];
-        const smartPts = findSmartObstacleFreeRoute(start, end, routedWires);
-        const updatedWire = { ...w, points: smartPts };
-        routedWires.push(updatedWire);
+        const smartPts = findSmartObstacleFreeRoute(w.points[0], w.points[w.points.length - 1], routedWires);
+        routedWires.push({ ...w, points: smartPts });
       }
     });
     wires = routedWires;
     saveData();
     render();
+  }
+
+  // =========================================================================
+  // Multi-Select & Grouping (รวมกลุ่ม / แยกกลุ่ม / คลุมเลือก)
+  // =========================================================================
+  function groupSelectedItems() {
+    if (selectedIds.size < 2) return;
+    pushHistory();
+    const newGrpId = 'grp_' + Date.now();
+    devices.forEach(d => {
+      if (selectedIds.has(d.id)) d.groupId = newGrpId;
+    });
+    saveData();
+    updateInspectorUI();
+    render();
+  }
+
+  function ungroupSelectedItems() {
+    if (selectedIds.size === 0) return;
+    pushHistory();
+    devices.forEach(d => {
+      if (selectedIds.has(d.id)) delete d.groupId;
+    });
+    saveData();
+    updateInspectorUI();
+    render();
+  }
+
+  // =========================================================================
+  // Pointer Drag Engine (รองรับลากยกกลุ่ม & ลากกรอบคลุมเลือก)
+  // =========================================================================
+  window.addEventListener('pointermove', (e) => {
+    if (!dragState.type) return;
+    if (dragState.pointerId !== null && e.pointerId !== dragState.pointerId) return;
+    e.preventDefault();
+
+    const dx = (e.clientX - dragState.startX) / zoomScale;
+    const dy = (e.clientY - dragState.startY) / zoomScale;
+
+    if (dragState.type === 'marquee') {
+      const rect = canvas.getBoundingClientRect();
+      const curX = Math.max(0, (e.clientX - rect.left) / zoomScale);
+      const curY = Math.max(0, (e.clientY - rect.top) / zoomScale);
+      const x = Math.min(dragState.origX, curX);
+      const y = Math.min(dragState.origY, curY);
+      const w = Math.abs(curX - dragState.origX);
+      const h = Math.abs(curY - dragState.origY);
+      marqueeRect.setAttribute('x', x);
+      marqueeRect.setAttribute('y', y);
+      marqueeRect.setAttribute('width', w);
+      marqueeRect.setAttribute('height', h);
+      return;
+    }
+
+    if (!dragState.hasMoved && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
+      dragState.hasMoved = true;
+      pushHistory();
+    }
+
+    if (dragState.hasMoved) {
+      if (dragState.type === 'devices') {
+        const snapDx = snap(dx);
+        const snapDy = snap(dy);
+        dragState.itemsSnapshot.forEach(snapItem => {
+          const nextX = Math.max(0, snapItem.origX + snapDx);
+          const nextY = Math.max(0, snapItem.origY + snapDy);
+          snapItem.dev.x = nextX;
+          snapItem.dev.y = nextY;
+          if (snapItem.domEl) {
+            snapItem.domEl.setAttribute('transform', `translate(${nextX}, ${nextY}) rotate(${snapItem.dev.rot || 0})`);
+          }
+        });
+        if (dragState.itemsSnapshot.length === 1) {
+          updateSnapGuides(dragState.itemsSnapshot[0].dev);
+        }
+      } else if (dragState.type === 'wireNode' && dragState.target && dragState.domEl) {
+        const nextX = Math.max(0, snap(dragState.origX + dx));
+        const nextY = Math.max(0, snap(dragState.origY + dy));
+        dragState.target.x = nextX;
+        dragState.target.y = nextY;
+        dragState.domEl.setAttribute('cx', nextX);
+        dragState.domEl.setAttribute('cy', nextY);
+        renderWiresOnly();
+      }
+    }
+  }, { passive: false });
+
+  const endDrag = (e) => {
+    if (!dragState.type) return;
+    if (dragState.pointerId !== null && e.pointerId !== dragState.pointerId) return;
+
+    if (dragState.type === 'marquee') {
+      const mx = parseFloat(marqueeRect.getAttribute('x'));
+      const my = parseFloat(marqueeRect.getAttribute('y'));
+      const mw = parseFloat(marqueeRect.getAttribute('width'));
+      const mh = parseFloat(marqueeRect.getAttribute('height'));
+      marqueeRect.style.display = 'none';
+
+      selectedIds.clear();
+      devices.forEach(d => {
+        if (d.x >= mx - 20 && d.x <= mx + mw && d.y >= my - 20 && d.y <= my + mh) {
+          selectedIds.add(d.id);
+          if (d.groupId) {
+            devices.filter(g => g.groupId === d.groupId).forEach(g => selectedIds.add(g.id));
+          }
+        }
+      });
+      dragState.type = null;
+      setMode('select');
+      updateInspectorUI();
+      render();
+      return;
+    }
+
+    const wasMoved = dragState.hasMoved;
+    dragState.type = null;
+    dragState.itemsSnapshot = [];
+    dragState.target = null;
+    dragState.domEl = null;
+    dragState.pointerId = null;
+    snapGuidesLayer.innerHTML = '';
+    if (wasMoved) {
+      saveData();
+      render();
+    }
+  };
+
+  window.addEventListener('pointerup', endDrag);
+  window.addEventListener('pointercancel', endDrag);
+
+  function startDeviceDrag(e, dev) {
+    if (mode !== 'select') return;
+    e.stopPropagation();
+
+    // ถ้าชิ้นนี้ไม่อยู่ในกลุ่มที่เลือกอยู่ ให้เลือกชิ้นนี้ (พร้อมสมาชิกใน groupId เดียวกันถ้ามี)
+    if (!selectedIds.has(dev.id)) {
+      selectedIds.clear();
+      selectedIds.add(dev.id);
+      if (dev.groupId) {
+        devices.filter(d => d.groupId === dev.groupId).forEach(d => selectedIds.add(d.id));
+      }
+      render();
+    }
+
+    selectedWireIdx = null;
+    updateInspectorUI();
+
+    const snapshot = [];
+    selectedIds.forEach(id => {
+      const targetDev = devices.find(d => d.id === id);
+      if (targetDev) {
+        snapshot.push({
+          dev: targetDev,
+          domEl: document.getElementById('el_' + id),
+          origX: targetDev.x,
+          origY: targetDev.y
+        });
+      }
+    });
+
+    dragState = {
+      type: 'devices',
+      itemsSnapshot: snapshot,
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      hasMoved: false
+    };
+  }
+
+  function startWireNodeDrag(e, pt, circleEl) {
+    e.stopPropagation();
+    dragState = {
+      type: 'wireNode', target: pt, domEl: circleEl, pointerId: e.pointerId,
+      startX: e.clientX, startY: e.clientY, origX: pt.x, origY: pt.y, hasMoved: false
+    };
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (mode === 'boxselect') {
+      const rect = canvas.getBoundingClientRect();
+      const sx = (e.clientX - rect.left) / zoomScale;
+      const sy = (e.clientY - rect.top) / zoomScale;
+      marqueeRect.setAttribute('x', sx);
+      marqueeRect.setAttribute('y', sy);
+      marqueeRect.setAttribute('width', 0);
+      marqueeRect.setAttribute('height', 0);
+      marqueeRect.style.display = 'block';
+      dragState = { type: 'marquee', pointerId: e.pointerId, origX: sx, origY: sy };
+    }
+  });
+
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const clickX = snap((e.clientX - rect.left) / zoomScale);
+    const clickY = snap((e.clientY - rect.top) / zoomScale);
+
+    if (mode === 'freewire') {
+      activeWirePoints.push({ x: clickX, y: clickY });
+      render();
+    } else if (e.target.id === 'canvas' && mode === 'select') {
+      closeInspector();
+      selectedWireIdx = null;
+      render();
+    }
+  });
+
+  function nudgeSelected(dirX, dirY) {
+    const step = parseInt(document.getElementById('nudgeStep').value) || 10;
+    if (selectedIds.size > 0) {
+      pushHistory();
+      selectedIds.forEach(id => {
+        const dev = devices.find(d => d.id === id);
+        if (dev) {
+          dev.x = Math.max(0, dev.x + dirX * step);
+          dev.y = Math.max(0, dev.y + dirY * step);
+        }
+      });
+      saveData();
+      render();
+    }
   }
 
   // =========================================================================
@@ -819,11 +1119,13 @@
   function openBOMModal() {
     const bomContent = document.getElementById('bomContent');
     const pipeTypes = ['pipe_pvc','pipe_upvc','pipe_emt','pipe_imc','pipe_flex','pipe_liquid','wireway','wire_duct'];
+    const archTypes = ['wall_aac','wall_brick','wall_concrete','pillar_concrete','floor_slab','ceiling_gyp','wall_chase'];
     const breakerTypes = ['main2p','rcbo2p','rcbo4p','rcbo1pn','mcb1p','mcb3p','dc_mcb2p','spd','fuse'];
     const ignoreTypes = ['label_tag', 'box_frame'];
 
     const itemCounts = {};
     const pipeTotals = {};
+    const archTotals = {};
     const breakersList = [];
 
     devices.forEach(d => {
@@ -834,6 +1136,10 @@
         if (d.pipeUnit === 'เซนติเมตร') meters = meters / 100;
         else if (d.pipeUnit === 'หุน') meters = meters * 0.003175;
         pipeTotals[key] = (pipeTotals[key] || 0) + meters;
+      } else if (archTypes.includes(d.type)) {
+        let meters = parseFloat(d.pipeLen) || 1;
+        if (d.pipeUnit === 'เซนติเมตร') meters = meters / 100;
+        archTotals[d.name] = (archTotals[d.name] || 0) + meters;
       } else {
         const hasAmp = breakerTypes.includes(d.type) || ['magnetic','overload'].includes(d.type);
         const key = hasAmp ? `${d.name} [${d.amp}]` : d.name;
@@ -864,7 +1170,7 @@
         const nearTop = endpoints.some(pt => Math.abs(pt.x - (brk.x + 20)) <= 45 && Math.abs(pt.y - (brk.y + 20)) <= 25);
         const nearBot = endpoints.some(pt => Math.abs(pt.x - (brk.x + 20)) <= 45 && Math.abs(pt.y - (brk.y + 150)) <= 25);
         if ((nearTop || nearBot) && brkAmp > maxAmp) {
-          const msg = `⚠️ เส้นที่ ${idx+1}: สาย ${wType} ${wSize} sq.mm. (รับกระแสได้ ~${maxAmp}A) ต่ออยู่กับ ${brk.name} ${brk.amp} (${brkAmp}A) — เสี่ยงสายร้อนเกินพิกัด ควรอัปเกรดขนาดสายไฟหรือลดแอมป์เบรกเกอร์ครับ`;
+          const msg = `⚠️ เส้นที่ ${idx+1}: สาย ${wType} ${wSize} sq.mm. (รับได้ ~${maxAmp}A) ต่ออยู่กับ ${brk.name} ${brk.amp} (${brkAmp}A) — เสี่ยงสายร้อนเกินพิกัดครับ`;
           if (!warnings.includes(msg)) warnings.push(msg);
         }
       });
@@ -876,7 +1182,7 @@
     if (warnings.length > 0) {
       html += `<div class="safety-box safety-warn"><strong>🚨 แจ้งเตือนความปลอดภัยทางไฟฟ้า (มอก./IEC):</strong><br>${warnings.join('<br>')}</div>`;
     } else {
-      html += `<div class="safety-box safety-ok"><strong>✅ ผลการตรวจสอบเบื้องต้น:</strong> ไม่พบจุดที่ขนาดสายไฟต่ำกว่าพิกัดเบรกเกอร์</div>`;
+      html += `<div class="safety-box safety-ok"><strong>✅ ผลการตรวจสอบเบื้องต้น:</strong> ขนาดสายไฟเหมาะสมกับพิกัดเบรกเกอร์</div>`;
     }
 
     html += `<table class="bom-table"><thead><tr><th>รายการอุปกรณ์ / วัสดุ</th><th style="width:95px;">จำนวนรวม</th></tr></thead><tbody>`;
@@ -890,14 +1196,14 @@
       html += `<tr><td>${name}</td><td><strong>${mFixed} ม.</strong> (~${sticks} เส้น)</td></tr>`;
       textLines.push(`- ${name} : ${mFixed} เมตร (ประมาณ ${sticks} เส้น/4ม.)`);
     });
+    Object.entries(archTotals).forEach(([name, m]) => {
+      html += `<tr><td>${name} (โครงสร้าง)</td><td><strong>${m.toFixed(2)} ม.</strong></td></tr>`;
+    });
     Object.entries(wireTotals).forEach(([name, m]) => {
       const mFixed = Math.ceil(m);
       html += `<tr><td>${name}</td><td><strong>~${mFixed} ม.</strong></td></tr>`;
       textLines.push(`- ${name} : ประมาณ ${mFixed} เมตร`);
     });
-    if (Object.keys(itemCounts).length === 0 && Object.keys(pipeTotals).length === 0 && Object.keys(wireTotals).length === 0) {
-      html += `<tr><td colspan="2" style="text-align:center; color:#94a3b8;">ยังไม่มีอุปกรณ์บนกระดาน</td></tr>`;
-    }
     html += `</tbody></table>`;
 
     lastGeneratedBOMText = textLines.join('\n');
@@ -942,7 +1248,7 @@
   }
 
   function createNewProject() {
-    const name = prompt('ตั้งชื่อโปรเจกต์ใหม่ (เช่น ระบบไฟในบ้าน, ตู้ไฟบ่อปลา):', 'โปรเจกต์ ' + (Object.keys(projects).length + 1));
+    const name = prompt('ตั้งชื่อโปรเจกต์ใหม่:', 'โปรเจกต์ ' + (Object.keys(projects).length + 1));
     if (!name) return;
     saveData();
     const newId = 'proj_' + Date.now();
@@ -1024,10 +1330,10 @@
     centerGuidesLayer.innerHTML = '';
     if (!showCenterLines) return;
     centerGuidesLayer.innerHTML = `
-      <line x1="1400" y1="0" x2="1400" y2="2000" stroke="#0ea5e9" stroke-width="1.2" stroke-dasharray="18,6,3,6" opacity="0.45"/>
-      <line x1="0" y1="1000" x2="2800" y2="1000" stroke="#0ea5e9" stroke-width="1.2" stroke-dasharray="18,6,3,6" opacity="0.45"/>
-      <text x="1408" y="24" fill="#0ea5e9" font-size="11" opacity="0.7">CL (กึ่งกลางแนวตั้ง)</text>
-      <text x="16" y="992" fill="#0ea5e9" font-size="11" opacity="0.7">CL (กึ่งกลางแนวนอน)</text>
+      <line x1="1500" y1="0" x2="1500" y2="2200" stroke="#0ea5e9" stroke-width="1.2" stroke-dasharray="18,6,3,6" opacity="0.45"/>
+      <line x1="0" y1="1100" x2="3000" y2="1100" stroke="#0ea5e9" stroke-width="1.2" stroke-dasharray="18,6,3,6" opacity="0.45"/>
+      <text x="1508" y="24" fill="#0ea5e9" font-size="11" opacity="0.7">CL (กึ่งกลางแนวตั้ง)</text>
+      <text x="16" y="1092" fill="#0ea5e9" font-size="11" opacity="0.7">CL (กึ่งกลางแนวนอน)</text>
     `;
   }
 
@@ -1038,108 +1344,13 @@
     devices.forEach(other => {
       if (other.id === activeDev.id) return;
       if (other.x === activeDev.x) {
-        guidesHtml += `<line x1="${activeDev.x}" y1="0" x2="${activeDev.x}" y2="2000" stroke="#ff8c00" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.85"/>`;
+        guidesHtml += `<line x1="${activeDev.x}" y1="0" x2="${activeDev.x}" y2="2200" stroke="#ff8c00" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.85"/>`;
       }
       if (other.y === activeDev.y) {
-        guidesHtml += `<line x1="0" y1="${activeDev.y}" x2="2800" y2="${activeDev.y}" stroke="#ff8c00" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.85"/>`;
+        guidesHtml += `<line x1="0" y1="${activeDev.y}" x2="3000" y2="${activeDev.y}" stroke="#ff8c00" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.85"/>`;
       }
     });
     snapGuidesLayer.innerHTML = guidesHtml;
-  }
-
-  // --- Pointer Drag Engine ---
-  window.addEventListener('pointermove', (e) => {
-    if (!dragState.type) return;
-    if (dragState.pointerId !== null && e.pointerId !== dragState.pointerId) return;
-    e.preventDefault();
-
-    const dx = (e.clientX - dragState.startX) / zoomScale;
-    const dy = (e.clientY - dragState.startY) / zoomScale;
-
-    if (!dragState.hasMoved && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
-      dragState.hasMoved = true;
-      pushHistory();
-    }
-
-    if (dragState.hasMoved) {
-      const nextX = Math.max(0, snap(dragState.origX + dx));
-      const nextY = Math.max(0, snap(dragState.origY + dy));
-
-      if (dragState.type === 'device' && dragState.target && dragState.domEl) {
-        dragState.target.x = nextX;
-        dragState.target.y = nextY;
-        const rot = dragState.target.rot || 0;
-        dragState.domEl.setAttribute('transform', `translate(${nextX}, ${nextY}) rotate(${rot})`);
-        updateSnapGuides(dragState.target);
-      } else if (dragState.type === 'wireNode' && dragState.target && dragState.domEl) {
-        dragState.target.x = nextX;
-        dragState.target.y = nextY;
-        dragState.domEl.setAttribute('cx', nextX);
-        dragState.domEl.setAttribute('cy', nextY);
-        renderWiresOnly();
-      }
-    }
-  }, { passive: false });
-
-  const endDrag = (e) => {
-    if (!dragState.type) return;
-    if (dragState.pointerId !== null && e.pointerId !== dragState.pointerId) return;
-    const wasMoved = dragState.hasMoved;
-    dragState.type = null;
-    dragState.target = null;
-    dragState.domEl = null;
-    dragState.pointerId = null;
-    snapGuidesLayer.innerHTML = '';
-    if (wasMoved) {
-      saveData();
-      render();
-    }
-  };
-
-  window.addEventListener('pointerup', endDrag);
-  window.addEventListener('pointercancel', endDrag);
-
-  function startDeviceDrag(e, dev, gEl) {
-    if (mode !== 'select') return;
-    e.stopPropagation();
-
-    const isAlreadySelected = selectedDeviceId === dev.id;
-    selectedDeviceId = dev.id;
-    selectedWireIdx = null;
-    showInspector(dev);
-
-    dragState = {
-      type: 'device', target: dev, domEl: gEl, pointerId: e.pointerId,
-      startX: e.clientX, startY: e.clientY, origX: dev.x, origY: dev.y, hasMoved: false
-    };
-
-    if (!isAlreadySelected) {
-      render();
-      const freshEl = document.getElementById('el_' + dev.id);
-      if (freshEl) dragState.domEl = freshEl;
-    }
-  }
-
-  function startWireNodeDrag(e, pt, circleEl) {
-    e.stopPropagation();
-    dragState = {
-      type: 'wireNode', target: pt, domEl: circleEl, pointerId: e.pointerId,
-      startX: e.clientX, startY: e.clientY, origX: pt.x, origY: pt.y, hasMoved: false
-    };
-  }
-
-  function nudgeSelected(dirX, dirY) {
-    const step = parseInt(document.getElementById('nudgeStep').value) || 20;
-    if (selectedDeviceId) {
-      const dev = devices.find(d => d.id === selectedDeviceId);
-      if (dev) {
-        pushHistory();
-        dev.x = Math.max(0, dev.x + dirX * step);
-        dev.y = Math.max(0, dev.y + dirY * step);
-        saveData();
-        render();
-      }
-    }
   }
 
   function exportToPNG() {
@@ -1152,8 +1363,8 @@
     devices.forEach(d => {
       minX = Math.min(minX, d.x - 40);
       minY = Math.min(minY, d.y - 40);
-      maxX = Math.max(maxX, d.x + 360);
-      maxY = Math.max(maxY, d.y + 280);
+      maxX = Math.max(maxX, d.x + 380);
+      maxY = Math.max(maxY, d.y + 300);
     });
     wires.forEach(w => {
       w.points.forEach(p => {
@@ -1282,6 +1493,7 @@
   function setMode(newMode) {
     mode = newMode;
     document.getElementById('modeSelect').classList.toggle('active', mode === 'select');
+    document.getElementById('modeBoxSelect').classList.toggle('active', mode === 'boxselect');
     document.getElementById('modeAutoWire').classList.toggle('active', mode === 'autowire');
     document.getElementById('modeFreeWire').classList.toggle('active', mode === 'freewire');
 
@@ -1289,12 +1501,12 @@
     document.getElementById('wireBar').style.display = isWireMode ? 'flex' : 'none';
     document.getElementById('finishWireBtn').style.display = mode === 'freewire' ? 'inline-flex' : 'none';
     document.getElementById('wireHintText').textContent = mode === 'autowire'
-      ? 'แตะหัวน็อตต้นทาง -> แตะปลายทาง (คำนวณหลบอุปกรณ์ให้เอง)'
+      ? 'แตะหัวน็อตต้นทาง -> แตะปลายทาง (คำนวณหลบอุปกรณ์อัตโนมัติ)'
       : 'แตะจุดเริ่ม -> แตะมุมเลี้ยวได้เรื่อยๆ -> แตะหัวน็อตปลายทาง';
 
     activeWirePoints = [];
     selectedWireIdx = null;
-    if (isWireMode) closeInspector();
+    if (isWireMode || mode === 'boxselect') closeInspector();
     render();
   }
 
@@ -1305,21 +1517,6 @@
   }
 
   function snap(val) { return Math.round(val / GRID) * GRID; }
-
-  canvas.addEventListener('click', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const clickX = snap((e.clientX - rect.left) / zoomScale);
-    const clickY = snap((e.clientY - rect.top) / zoomScale);
-
-    if (mode === 'freewire') {
-      activeWirePoints.push({ x: clickX, y: clickY });
-      render();
-    } else if (e.target.id === 'canvas') {
-      closeInspector();
-      selectedWireIdx = null;
-      render();
-    }
-  });
 
   function finishCurrentWire() {
     if (activeWirePoints.length >= 2) {
@@ -1344,8 +1541,16 @@
   function addDevice(itemSpec) {
     pushHistory();
     const ws = document.getElementById('workspace');
-    const spawnX = snap((ws.scrollLeft + 100) / zoomScale + (devices.length % 5) * 40);
-    const spawnY = snap((ws.scrollTop + 100) / zoomScale + (devices.length % 4) * 40);
+    const spawnX = snap((ws.scrollLeft + 80) / zoomScale + (devices.length % 5) * 30);
+    const spawnY = snap((ws.scrollTop + 80) / zoomScale + (devices.length % 4) * 30);
+
+    // ถ้าเป็นตู้คอนซูเมอร์สำเร็จรูป ให้เสกทั้งชุด
+    if (itemSpec.type === 'cu_prefab') {
+      spawnPrefabConsumerUnit(itemSpec.prefabSlots, spawnX, spawnY);
+      saveData();
+      render();
+      return;
+    }
 
     const newDev = {
       id: 'dev_' + Date.now() + Math.random().toString(36).substr(2, 4),
@@ -1354,6 +1559,7 @@
       x: spawnX,
       y: spawnY,
       rot: 0,
+      viewFace: 'front',
       amp: itemSpec.defaultAmp || 'C20',
       color: itemSpec.defaultColor || '#2ecc71',
       slots: itemSpec.defaultSlots || 6,
@@ -1364,8 +1570,8 @@
       isOn: true
     };
     devices.push(newDev);
-    selectedDeviceId = newDev.id;
-    showInspector(newDev);
+    selectedIds = new Set([newDev.id]);
+    updateInspectorUI();
     saveData();
     render();
   }
@@ -1377,7 +1583,7 @@
     if (unit === 'เมตร') px = len * 160;
     else if (unit === 'เซนติเมตร') px = len * 2.4;
     else if (unit === 'หุน') px = len * 20;
-    return Math.max(40, Math.min(1200, snap(px)));
+    return Math.max(40, Math.min(1400, snap(px)));
   }
 
   function renderWiresOnly() {
@@ -1386,7 +1592,7 @@
       if (!w.points || w.points.length < 2) return;
       const d = w.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
       const isWireSelected = selectedWireIdx === idx;
-      const strokeW = isWireSelected ? 7 : (parseFloat(w.wireSize) >= 6 ? 6.5 : 5);
+      const strokeW = isWireSelected ? 6 : (parseFloat(w.wireSize) >= 6 ? 5.5 : 4);
 
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', d);
@@ -1410,6 +1616,7 @@
   }
 
   function render() {
+    archLayer.innerHTML = '';
     pipesLayer.innerHTML = '';
     railsLayer.innerHTML = '';
     devicesLayer.innerHTML = '';
@@ -1423,7 +1630,7 @@
         handle.setAttribute('class', 'wire-handle');
         handle.setAttribute('cx', pt.x);
         handle.setAttribute('cy', pt.y);
-        handle.setAttribute('r', '10');
+        handle.setAttribute('r', '9');
         handle.setAttribute('fill', '#ff8c00');
         handle.setAttribute('stroke', '#fff');
         handle.setAttribute('stroke-width', '2');
@@ -1461,7 +1668,7 @@
       const preview = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       preview.setAttribute('d', d);
       preview.setAttribute('stroke', wireColor);
-      preview.setAttribute('stroke-width', '5');
+      preview.setAttribute('stroke-width', '4.5');
       preview.setAttribute('stroke-dasharray', '8,6');
       preview.setAttribute('fill', 'none');
       wiresLayer.appendChild(preview);
@@ -1470,7 +1677,7 @@
         const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         dot.setAttribute('cx', pt.x);
         dot.setAttribute('cy', pt.y);
-        dot.setAttribute('r', '6');
+        dot.setAttribute('r', '5');
         dot.setAttribute('fill', '#ff8c00');
         terminalsLayer.appendChild(dot);
       });
@@ -1484,15 +1691,89 @@
       g.setAttribute('transform', `translate(${dev.x}, ${dev.y}) rotate(${rot})`);
       g.style.cursor = mode === 'select' ? 'grab' : 'default';
 
-      const isSelected = dev.id === selectedDeviceId;
+      const isSelected = selectedIds.has(dev.id);
       const stroke = isSelected ? '#ff8c00' : '#222';
       const sw = isSelected ? 3 : 1.5;
+      const face = dev.viewFace || 'front';
 
       let pins = [];
       let targetLayer = devicesLayer;
       const thick = PIPE_THICKNESS[dev.pipeSize || '4 หุน'] || 20;
 
       switch (dev.type) {
+        // --- หมวดก่อสร้าง & ผนัง (Construction) ---
+        case 'wall_aac': {
+          const w = getPipePixelLength(dev);
+          const h = 40;
+          let joints = '';
+          for (let bx = 40; bx < w; bx += 40) {
+            joints += `<line x1="${bx}" y1="0" x2="${bx}" y2="20" stroke="#94a3b8" stroke-width="1.5"/>`;
+          }
+          for (let bx = 20; bx < w; bx += 40) {
+            joints += `<line x1="${bx}" y1="20" x2="${bx}" y2="40" stroke="#94a3b8" stroke-width="1.5"/>`;
+          }
+          const tag = `ผนังอิฐมวลเบา ${dev.pipeLen} ${dev.pipeUnit === 'เซนติเมตร' ? 'ซม.' : 'ม.'}${dev.label ? ' • '+dev.label : ''}`;
+          g.innerHTML = `
+            <rect x="0" y="0" width="${w}" height="${h}" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+            <line x1="0" y1="20" x2="${w}" y2="20" stroke="#94a3b8" stroke-width="1.5"/>
+            ${joints}
+            <text x="8" y="-5" fill="#cbd5e1" font-size="10" font-weight="bold">${tag}</text>
+          `;
+          targetLayer = archLayer;
+          break;
+        }
+        case 'wall_brick': {
+          const w = getPipePixelLength(dev);
+          const h = 40;
+          let joints = '';
+          for (let bx = 30; bx < w; bx += 30) {
+            joints += `<line x1="${bx}" y1="0" x2="${bx}" y2="13" stroke="#7f1d1d" stroke-width="1.5"/><line x1="${bx}" y1="26" x2="${bx}" y2="40" stroke="#7f1d1d" stroke-width="1.5"/>`;
+          }
+          for (let bx = 15; bx < w; bx += 30) {
+            joints += `<line x1="${bx}" y1="13" x2="${bx}" y2="26" stroke="#7f1d1d" stroke-width="1.5"/>`;
+          }
+          g.innerHTML = `
+            <rect x="0" y="0" width="${w}" height="${h}" fill="#b91c1c" stroke="${stroke}" stroke-width="${sw}"/>
+            <line x1="0" y1="13" x2="${w}" y2="13" stroke="#fca5a5" stroke-width="1"/><line x1="0" y1="26" x2="${w}" y2="26" stroke="#fca5a5" stroke-width="1"/>
+            ${joints}
+            <text x="8" y="-5" fill="#fca5a5" font-size="10" font-weight="bold">ผนังอิฐมอญ ${dev.pipeLen} ม.</text>
+          `;
+          targetLayer = archLayer;
+          break;
+        }
+        case 'wall_concrete':
+        case 'floor_slab':
+        case 'ceiling_gyp': {
+          const w = getPipePixelLength(dev);
+          const h = dev.type === 'ceiling_gyp' ? 16 : 36;
+          const fill = dev.type === 'ceiling_gyp' ? '#cbd5e1' : '#64748b';
+          g.innerHTML = `
+            <rect x="0" y="0" width="${w}" height="${h}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>
+            <text x="8" y="-5" fill="#94a3b8" font-size="10" font-weight="bold">${dev.name} (${dev.pipeLen} ${dev.pipeUnit === 'เซนติเมตร' ? 'ซม.' : 'ม.'})</text>
+          `;
+          targetLayer = archLayer;
+          break;
+        }
+        case 'pillar_concrete': {
+          g.innerHTML = `
+            <rect x="0" y="0" width="50" height="50" fill="#475569" stroke="${stroke}" stroke-width="${sw}"/>
+            <line x1="0" y1="0" x2="50" y2="50" stroke="#94a3b8" stroke-width="1.5"/>
+            <line x1="50" y1="0" x2="0" y2="50" stroke="#94a3b8" stroke-width="1.5"/>
+            <text x="25" y="-5" fill="#94a3b8" font-size="9" text-anchor="middle">${dev.label || 'เสาปูน'}</text>
+          `;
+          targetLayer = archLayer;
+          break;
+        }
+        case 'wall_chase': {
+          const w = getPipePixelLength(dev);
+          g.innerHTML = `
+            <rect x="0" y="0" width="${w}" height="24" fill="rgba(239, 68, 68, 0.18)" stroke="#ef4444" stroke-width="2" stroke-dasharray="8,4"/>
+            <text x="8" y="-4" fill="#fca5a5" font-size="9" font-weight="bold">🪚 แนวกรีดผนังฝังท่อ (${dev.pipeLen} ม.)</text>
+          `;
+          targetLayer = archLayer;
+          break;
+        }
+
         // --- ท่อ & ราง ---
         case 'pipe_pvc':
         case 'pipe_upvc':
@@ -1519,13 +1800,9 @@
 
           let extra = '';
           if (dev.type === 'pipe_flex' || dev.type === 'pipe_liquid') {
-            for (let rx = 6; rx < w - 4; rx += 8) {
-              extra += `<line x1="${rx}" y1="0" x2="${rx}" y2="${thick}" stroke="${st.hi}" stroke-width="2.5"/>`;
-            }
+            for (let rx = 6; rx < w - 4; rx += 8) extra += `<line x1="${rx}" y1="0" x2="${rx}" y2="${thick}" stroke="${st.hi}" stroke-width="2.5"/>`;
           } else if (dev.type === 'wireway') {
-            for (let rx = 8; rx < w - 12; rx += 18) {
-              extra += `<rect x="${rx}" y="4" width="9" height="${thick - 8}" fill="#0f172a"/>`;
-            }
+            for (let rx = 8; rx < w - 12; rx += 18) extra += `<rect x="${rx}" y="4" width="9" height="${thick - 8}" fill="#0f172a"/>`;
           } else {
             extra = `<line x1="0" y1="${thick*0.28}" x2="${w}" y2="${thick*0.28}" stroke="${st.hi}" stroke-width="2" opacity="0.6"/>`;
           }
@@ -1560,40 +1837,29 @@
           break;
         }
         case 'tee_pipe': {
-          const w = thick + 44;
-          const mid = w / 2;
+          const w = thick + 44; const mid = w / 2;
           g.innerHTML = `<path d="M 0 0 L ${w} 0 L ${w} ${thick} L ${mid + thick/2} ${thick} L ${mid + thick/2} ${thick + 22} L ${mid - thick/2} ${thick + 22} L ${mid - thick/2} ${thick} L 0 ${thick} Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>`;
           targetLayer = pipesLayer;
           break;
         }
         case 'cross_pipe': {
-          const w = thick + 44;
-          const mid = w / 2;
+          const w = thick + 44; const mid = w / 2;
           g.innerHTML = `<path d="M ${mid-thick/2} 0 L ${mid+thick/2} 0 L ${mid+thick/2} 22 L ${w} 22 L ${w} ${22+thick} L ${mid+thick/2} ${22+thick} L ${mid+thick/2} ${w} L ${mid-thick/2} ${w} L ${mid-thick/2} ${22+thick} L 0 ${22+thick} L 0 22 L ${mid-thick/2} 22 Z" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>`;
           targetLayer = pipesLayer;
           break;
         }
         case 'coupling': {
-          g.innerHTML = `
-            <rect x="0" y="-2" width="32" height="${thick+4}" rx="3" fill="#ca8a04" stroke="${stroke}" stroke-width="${sw}"/>
-            <line x1="16" y1="-2" x2="16" y2="${thick+2}" stroke="#854d0e" stroke-width="2"/>
-          `;
+          g.innerHTML = `<rect x="0" y="-2" width="32" height="${thick+4}" rx="3" fill="#ca8a04" stroke="${stroke}" stroke-width="${sw}"/><line x1="16" y1="-2" x2="16" y2="${thick+2}" stroke="#854d0e" stroke-width="2"/>`;
           targetLayer = pipesLayer;
           break;
         }
         case 'box_conn': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="18" height="${thick+4}" rx="2" fill="#94a3b8" stroke="${stroke}"/>
-            <rect x="18" y="-4" width="10" height="${thick+12}" rx="2" fill="#64748b" stroke="${stroke}"/>
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="18" height="${thick+4}" rx="2" fill="#94a3b8" stroke="${stroke}"/><rect x="18" y="-4" width="10" height="${thick+12}" rx="2" fill="#64748b" stroke="${stroke}"/>`;
           targetLayer = pipesLayer;
           break;
         }
         case 'clamp': {
-          g.innerHTML = `
-            <rect x="0" y="-6" width="14" height="${thick+12}" rx="3" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="7" cy="-3" r="2" fill="#334155"/><circle cx="7" cy="${thick+3}" r="2" fill="#334155"/>
-          `;
+          g.innerHTML = `<rect x="0" y="-6" width="14" height="${thick+12}" rx="3" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/><circle cx="7" cy="-3" r="2" fill="#334155"/><circle cx="7" cy="${thick+3}" r="2" fill="#334155"/>`;
           break;
         }
         case 'junction_box': {
@@ -1607,11 +1873,7 @@
           break;
         }
         case 'round_box': {
-          g.innerHTML = `
-            <circle cx="36" cy="36" r="34" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="36" cy="36" r="26" fill="#fef08a" stroke="#ca8a04"/>
-            ${drawScrew(16, 36)} ${drawScrew(56, 36)}
-          `;
+          g.innerHTML = `<circle cx="36" cy="36" r="34" fill="#eab308" stroke="${stroke}" stroke-width="${sw}"/><circle cx="36" cy="36" r="26" fill="#fef08a" stroke="#ca8a04"/>${drawScrew(16, 36)} ${drawScrew(56, 36)}`;
           targetLayer = pipesLayer;
           break;
         }
@@ -1626,11 +1888,7 @@
           break;
         }
         case 'cable_gland': {
-          g.innerHTML = `
-            <rect x="4" y="0" width="24" height="12" rx="2" fill="#475569" stroke="${stroke}"/>
-            <rect x="0" y="12" width="32" height="14" rx="3" fill="#64748b" stroke="${stroke}"/>
-            <rect x="6" y="26" width="20" height="10" rx="2" fill="#1e293b"/>
-          `;
+          g.innerHTML = `<rect x="4" y="0" width="24" height="12" rx="2" fill="#475569" stroke="${stroke}"/><rect x="0" y="12" width="32" height="14" rx="3" fill="#64748b" stroke="${stroke}"/><rect x="6" y="26" width="20" height="10" rx="2" fill="#1e293b"/>`;
           break;
         }
 
@@ -1653,7 +1911,7 @@
             <rect x="0" y="0" width="${w}" height="${h}" fill="rgba(30,41,59,0.22)" stroke="${isSelected ? '#ff8c00' : '#475569'}" stroke-width="3" rx="8"/>
             <text x="12" y="22" fill="#94a3b8" font-size="13" font-weight="bold">${dev.label || 'ตู้ควบคุมไฟฟ้า'}</text>
           `;
-          targetLayer = pipesLayer;
+          targetLayer = archLayer;
           break;
         }
         case 'comb_busbar': {
@@ -1664,11 +1922,7 @@
             teeth += `<rect x="${px-3}" y="-14" width="6" height="16" fill="#d97706"/>`;
             pins.push({dx: px, dy: -10});
           }
-          g.innerHTML = `
-            ${teeth}
-            <rect x="6" y="0" width="${w-12}" height="18" rx="3" fill="#b45309" stroke="${stroke}" stroke-width="${sw}"/>
-            <text x="${w/2}" y="13" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">BUSBAR</text>
-          `;
+          g.innerHTML = `${teeth}<rect x="6" y="0" width="${w-12}" height="18" rx="3" fill="#b45309" stroke="${stroke}" stroke-width="${sw}"/><text x="${w/2}" y="13" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">BUSBAR</text>`;
           break;
         }
         case 'copper_bar':
@@ -1682,10 +1936,7 @@
             screws += drawScrew(sx, 18);
             pins.push({dx: sx, dy: 18});
           }
-          g.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="36" rx="4" fill="${fillMap[dev.type]}" stroke="${stroke}" stroke-width="${sw}"/>
-            ${screws}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="${w}" height="36" rx="4" fill="${fillMap[dev.type]}" stroke="${stroke}" stroke-width="${sw}"/>${screws}`;
           break;
         }
         case 'ground_rod': {
@@ -1700,41 +1951,55 @@
           break;
         }
         case 'terminal_block': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="120" height="44" rx="4" fill="#475569" stroke="${stroke}" stroke-width="${sw}"/>
-            ${drawScrew(20, 22)} ${drawScrew(46, 22)} ${drawScrew(74, 22)} ${drawScrew(100, 22)}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="120" height="44" rx="4" fill="#475569" stroke="${stroke}" stroke-width="${sw}"/>${drawScrew(20, 22)} ${drawScrew(46, 22)} ${drawScrew(74, 22)} ${drawScrew(100, 22)}`;
           pins = [{dx:20,dy:22},{dx:46,dy:22},{dx:74,dy:22},{dx:100,dy:22}];
           break;
         }
         case 'terminal_strip': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="140" height="50" rx="4" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
-            ${[18,40,62,84,106,124].map(x => drawScrew(x, 14) + drawScrew(x, 36)).join('')}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="140" height="50" rx="4" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>${[18,40,62,84,106,124].map(x => drawScrew(x, 14) + drawScrew(x, 36)).join('')}`;
           [18,40,62,84,106,124].forEach(x => { pins.push({dx:x,dy:14}); pins.push({dx:x,dy:36}); });
           break;
         }
 
-        // --- เบรกเกอร์ ---
+        // --- เบรกเกอร์ (รองรับมุมมองหน้า / หลัง / ข้าง) ---
         case 'main2p':
         case 'rcbo2p':
         case 'dc_mcb2p': {
           const barColor = dev.type === 'rcbo2p' ? '#2563eb' : (dev.type === 'dc_mcb2p' ? '#f59e0b' : '#dc2626');
-          g.innerHTML = `
-            <rect x="0" y="0" width="80" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="0" y="42" width="80" height="6" fill="${barColor}"/>
-            <rect x="14" y="56" width="52" height="20" rx="2" fill="#0f172a"/>
-            <text x="40" y="70" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">${dev.type === 'dc_mcb2p' ? 'DC '+dev.amp : dev.amp}</text>
-            ${dev.type === 'rcbo2p' ? `<circle cx="64" cy="95" r="7" fill="#facc15" stroke="#854d0e"/><text x="64" y="98" font-size="8" font-weight="bold" text-anchor="middle" fill="#000">T</text>` : ''}
-            <rect x="10" y="${dev.isOn ? 86 : 98}" width="${dev.type === 'rcbo2p' ? 42 : 60}" height="14" rx="2" fill="#1e293b"/>
-            <rect x="14" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
-            <rect x="46" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
-            ${drawScrew(20, 20)} ${drawScrew(60, 20)}
-            ${drawScrew(20, 150)} ${drawScrew(60, 150)}
-            ${drawBadge(40, 184, dev.label)}
-          `;
-          pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:20,dy:150},{dx:60,dy:150}];
+          if (face === 'back') {
+            g.innerHTML = `
+              <rect x="0" y="0" width="80" height="170" rx="4" fill="#334155" stroke="${stroke}" stroke-width="${sw}"/>
+              <rect x="0" y="62" width="80" height="46" fill="#1e293b" stroke="#64748b"/>
+              <text x="40" y="88" fill="#94a3b8" font-size="10" font-weight="bold" text-anchor="middle">หลัง (DIN CLIP)</text>
+              ${drawScrew(20, 20)} ${drawScrew(60, 20)} ${drawScrew(20, 150)} ${drawScrew(60, 150)}
+              ${drawBadge(40, 184, dev.label)}
+            `;
+            pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:20,dy:150},{dx:60,dy:150}];
+          } else if (face === 'side') {
+            g.innerHTML = `
+              <rect x="0" y="0" width="44" height="170" rx="4" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
+              <rect x="0" y="62" width="10" height="46" fill="#475569"/>
+              <rect x="44" y="${dev.isOn ? 75 : 92}" width="14" height="10" rx="2" fill="#1e293b"/>
+              <text x="22" y="90" fill="#0f172a" font-size="9" font-weight="bold" text-anchor="middle">${dev.amp}</text>
+              ${drawScrew(22, 20)} ${drawScrew(22, 150)}
+            `;
+            pins = [{dx:22,dy:20},{dx:22,dy:150}];
+          } else {
+            g.innerHTML = `
+              <rect x="0" y="0" width="80" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
+              <rect x="0" y="42" width="80" height="6" fill="${barColor}"/>
+              <rect x="14" y="56" width="52" height="20" rx="2" fill="#0f172a"/>
+              <text x="40" y="70" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">${dev.type === 'dc_mcb2p' ? 'DC '+dev.amp : dev.amp}</text>
+              ${dev.type === 'rcbo2p' ? `<circle cx="64" cy="95" r="7" fill="#facc15" stroke="#854d0e"/><text x="64" y="98" font-size="8" font-weight="bold" text-anchor="middle" fill="#000">T</text>` : ''}
+              <rect x="10" y="${dev.isOn ? 86 : 98}" width="${dev.type === 'rcbo2p' ? 42 : 60}" height="14" rx="2" fill="#1e293b"/>
+              <rect x="14" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+              <rect x="46" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+              ${drawScrew(20, 20)} ${drawScrew(60, 20)}
+              ${drawScrew(20, 150)} ${drawScrew(60, 150)}
+              ${drawBadge(40, 184, dev.label)}
+            `;
+            pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:20,dy:150},{dx:60,dy:150}];
+          }
           break;
         }
         case 'rcbo4p': {
@@ -1754,12 +2019,11 @@
         case 'mcb1p': {
           const isRcbo = dev.type === 'rcbo1pn';
           g.innerHTML = `
-            <rect x="0" y="0" width="40" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="0" y="42" width="40" height="6" fill="${isRcbo ? '#2563eb' : '#dc2626'}"/>
-            <rect x="4" y="56" width="32" height="20" rx="2" fill="#0f172a"/>
-            <text x="20" y="70" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">${dev.amp}</text>
-            <rect x="6" y="${dev.isOn ? 86 : 98}" width="28" height="14" rx="2" fill="#1e293b"/>
-            <rect x="12" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
+            <rect x="0" y="0" width="40" height="170" rx="4" fill="${face === 'back' ? '#334155' : '#e2e8f0'}" stroke="${stroke}" stroke-width="${sw}"/>
+            ${face === 'back'
+              ? `<rect x="0" y="62" width="40" height="46" fill="#1e293b"/><text x="20" y="88" fill="#94a3b8" font-size="8" text-anchor="middle">หลัง</text>`
+              : `<rect x="0" y="42" width="40" height="6" fill="${isRcbo ? '#2563eb' : '#dc2626'}"/><rect x="4" y="56" width="32" height="20" rx="2" fill="#0f172a"/><text x="20" y="70" fill="#fff" font-size="11" font-weight="bold" text-anchor="middle">${dev.amp}</text><rect x="6" y="${dev.isOn ? 86 : 98}" width="28" height="14" rx="2" fill="#1e293b"/><rect x="12" y="118" width="16" height="7" rx="1" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>`
+            }
             ${drawScrew(20, 20)} ${drawScrew(20, 150)}
             ${drawBadge(20, 184, dev.label)}
           `;
@@ -1780,78 +2044,87 @@
           break;
         }
         case 'spd': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="80" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="0" y="42" width="80" height="6" fill="#f97316"/>
-            <text x="40" y="72" fill="#ea580c" font-size="13" font-weight="bold" text-anchor="middle">SPD 40kA</text>
-            <rect x="16" y="90" width="48" height="24" rx="3" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>
-            ${drawScrew(20, 20)} ${drawScrew(60, 20)} ${drawScrew(40, 150)}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="80" height="170" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/><rect x="0" y="42" width="80" height="6" fill="#f97316"/><text x="40" y="72" fill="#ea580c" font-size="13" font-weight="bold" text-anchor="middle">SPD 40kA</text><rect x="16" y="90" width="48" height="24" rx="3" fill="${dev.isOn ? '#22c55e' : '#ef4444'}"/>${drawScrew(20, 20)} ${drawScrew(60, 20)} ${drawScrew(40, 150)}`;
           pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:40,dy:150}];
           break;
         }
         case 'fuse': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="40" height="150" rx="4" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="8" y="48" width="24" height="54" rx="4" fill="#334155"/>
-            <text x="20" y="79" fill="#facc15" font-size="10" font-weight="bold" text-anchor="middle">${dev.amp}</text>
-            ${drawScrew(20, 20)} ${drawScrew(20, 130)}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="40" height="150" rx="4" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/><rect x="8" y="48" width="24" height="54" rx="4" fill="#334155"/><text x="20" y="79" fill="#facc15" font-size="10" font-weight="bold" text-anchor="middle">${dev.amp}</text>${drawScrew(20, 20)} ${drawScrew(20, 130)}`;
           pins = [{dx:20,dy:20},{dx:20,dy:130}];
           break;
         }
 
-        // --- ไฟฟ้าในอาคาร (Indoor) ---
+        // --- ไฟฟ้าในอาคาร (รองรับมุมมองหน้า / หลัง / ข้าง) ---
         case 'outlet_duplex':
         case 'outlet_wp': {
           const isWp = dev.type === 'outlet_wp';
-          g.innerHTML = `
-            <rect x="0" y="0" width="100" height="60" rx="6" fill="${isWp ? '#cbd5e1' : '#f8fafc'}" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="28" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
-            <rect x="21" y="22" width="4" height="10" fill="#0f172a"/><rect x="31" y="22" width="4" height="10" fill="#0f172a"/>
-            <circle cx="72" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
-            <rect x="65" y="22" width="4" height="10" fill="#0f172a"/><rect x="75" y="22" width="4" height="10" fill="#0f172a"/>
-            ${isWp ? `<rect x="4" y="4" width="92" height="52" rx="4" fill="rgba(56,189,248,0.22)" stroke="#0284c7"/>` : ''}
-            ${drawScrew(20, -12)} ${drawScrew(50, -12)} ${drawScrew(80, -12)}
-            ${drawBadge(50, 74, dev.label || (isWp ? 'ปลั๊กกันน้ำ' : ''))}
-          `;
-          pins = [{dx:20,dy:-12},{dx:50,dy:-12},{dx:80,dy:-12}];
+          if (face === 'back') {
+            // มุมมองด้านหลังปลั๊ก แสดงขั้วเสียบสาย L / N / G หลังเต้ารับชัดเจน
+            g.innerHTML = `
+              <rect x="0" y="0" width="100" height="60" rx="6" fill="#334155" stroke="${stroke}" stroke-width="${sw}"/>
+              <text x="50" y="14" fill="#94a3b8" font-size="9" font-weight="bold" text-anchor="middle">ด้านหลังเต้ารับ</text>
+              ${drawScrew(20, 34)} <text x="20" y="52" fill="#f59e0b" font-size="10" font-weight="bold" text-anchor="middle">L</text>
+              ${drawScrew(50, 34)} <text x="50" y="52" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">N</text>
+              ${drawScrew(80, 34)} <text x="80" y="52" fill="#22c55e" font-size="10" font-weight="bold" text-anchor="middle">G</text>
+              ${drawBadge(50, 74, dev.label)}
+            `;
+            pins = [{dx:20,dy:34},{dx:50,dy:34},{dx:80,dy:34}];
+          } else if (face === 'side') {
+            g.innerHTML = `
+              <rect x="16" y="0" width="28" height="60" rx="3" fill="#475569" stroke="${stroke}"/>
+              <rect x="44" y="0" width="10" height="60" rx="2" fill="#f8fafc" stroke="#64748b"/>
+              <text x="30" y="34" fill="#fff" font-size="8" text-anchor="middle">บ็อกซ์</text>
+              ${drawScrew(20, 20)} ${drawScrew(20, 40)}
+            `;
+            pins = [{dx:20,dy:20},{dx:20,dy:40}];
+          } else {
+            g.innerHTML = `
+              <rect x="0" y="0" width="100" height="60" rx="6" fill="${isWp ? '#cbd5e1' : '#f8fafc'}" stroke="${stroke}" stroke-width="${sw}"/>
+              <circle cx="28" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
+              <rect x="21" y="22" width="4" height="10" fill="#0f172a"/><rect x="31" y="22" width="4" height="10" fill="#0f172a"/>
+              <circle cx="72" cy="30" r="16" fill="#e2e8f0" stroke="#94a3b8"/>
+              <rect x="65" y="22" width="4" height="10" fill="#0f172a"/><rect x="75" y="22" width="4" height="10" fill="#0f172a"/>
+              ${isWp ? `<rect x="4" y="4" width="92" height="52" rx="4" fill="rgba(56,189,248,0.22)" stroke="#0284c7"/>` : ''}
+              ${drawScrew(20, -10)} ${drawScrew(50, -10)} ${drawScrew(80, -10)}
+              ${drawBadge(50, 74, dev.label || (isWp ? 'ปลั๊กกันน้ำ' : ''))}
+            `;
+            pins = [{dx:20,dy:-10},{dx:50,dy:-10},{dx:80,dy:-10}];
+          }
           break;
         }
         case 'wall_switch':
         case 'switch_2way':
         case 'dimmer_sw': {
           const tagMap = { wall_switch: '1-WAY', switch_2way: '2-WAY', dimmer_sw: 'DIM' };
-          g.innerHTML = `
-            <rect x="0" y="0" width="60" height="80" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
-            ${dev.type === 'dimmer_sw'
-              ? `<circle cx="30" cy="40" r="16" fill="#cbd5e1" stroke="#475569" stroke-width="2"/><line x1="30" y1="40" x2="38" y2="28" stroke="#0f172a" stroke-width="3"/>`
-              : `<rect x="18" y="18" width="24" height="44" rx="3" fill="${dev.isOn ? '#cbd5e1' : '#94a3b8'}" stroke="#64748b"/><text x="30" y="44" fill="#334155" font-size="8" font-weight="bold" text-anchor="middle">${tagMap[dev.type]}</text>`
-            }
-            ${drawScrew(16, -12)} ${drawScrew(30, -12)} ${drawScrew(44, -12)}
-            ${drawBadge(30, 94, dev.label)}
-          `;
-          pins = dev.type === 'switch_2way' ? [{dx:16,dy:-12},{dx:30,dy:-12},{dx:44,dy:-12}] : [{dx:20,dy:-12},{dx:40,dy:-12}];
+          if (face === 'back') {
+            g.innerHTML = `
+              <rect x="0" y="0" width="60" height="80" rx="6" fill="#334155" stroke="${stroke}" stroke-width="${sw}"/>
+              <text x="30" y="14" fill="#94a3b8" font-size="8" text-anchor="middle">หลังสวิตช์</text>
+              ${drawScrew(20, 32)} <text x="38" y="36" fill="#f59e0b" font-size="9" font-weight="bold">COM</text>
+              ${drawScrew(20, 56)} <text x="38" y="60" fill="#38bdf8" font-size="9" font-weight="bold">L1/L2</text>
+            `;
+            pins = [{dx:20,dy:32},{dx:20,dy:56}];
+          } else {
+            g.innerHTML = `
+              <rect x="0" y="0" width="60" height="80" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
+              ${dev.type === 'dimmer_sw'
+                ? `<circle cx="30" cy="40" r="16" fill="#cbd5e1" stroke="#475569" stroke-width="2"/><line x1="30" y1="40" x2="38" y2="28" stroke="#0f172a" stroke-width="3"/>`
+                : `<rect x="18" y="18" width="24" height="44" rx="3" fill="${dev.isOn ? '#cbd5e1' : '#94a3b8'}" stroke="#64748b"/><text x="30" y="44" fill="#334155" font-size="8" font-weight="bold" text-anchor="middle">${tagMap[dev.type]}</text>`
+              }
+              ${drawScrew(20, -10)} ${drawScrew(40, -10)}
+              ${drawBadge(30, 94, dev.label)}
+            `;
+            pins = [{dx:20,dy:-10},{dx:40,dy:-10}];
+          }
           break;
         }
         case 'downlight': {
-          g.innerHTML = `
-            <circle cx="35" cy="35" r="32" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="35" cy="35" r="24" fill="${dev.isOn ? '#fef08a' : '#94a3b8'}" stroke="#ca8a04"/>
-            <text x="35" y="39" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">LED</text>
-            ${drawScrew(20, -10)} ${drawScrew(50, -10)}
-            ${drawBadge(35, 80, dev.label)}
-          `;
+          g.innerHTML = `<circle cx="35" cy="35" r="32" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/><circle cx="35" cy="35" r="24" fill="${dev.isOn ? '#fef08a' : '#94a3b8'}" stroke="#ca8a04"/><text x="35" y="39" fill="#0f172a" font-size="10" font-weight="bold" text-anchor="middle">LED</text>${drawScrew(20, -10)} ${drawScrew(50, -10)}${drawBadge(35, 80, dev.label)}`;
           pins = [{dx:20,dy:-10},{dx:50,dy:-10}];
           break;
         }
         case 'tube_led': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="160" height="28" rx="6" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="10" y="5" width="140" height="18" rx="4" fill="${dev.isOn ? '#fef9c3' : '#94a3b8'}"/>
-            ${drawScrew(20, -10)} ${drawScrew(140, -10)}
-            ${drawBadge(80, 42, dev.label || 'หลอด T8')}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="160" height="28" rx="6" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/><rect x="10" y="5" width="140" height="18" rx="4" fill="${dev.isOn ? '#fef9c3' : '#94a3b8'}"/>${drawScrew(20, -10)} ${drawScrew(140, -10)}${drawBadge(80, 42, dev.label || 'หลอด T8')}`;
           pins = [{dx:20,dy:-10},{dx:140,dy:-10}];
           break;
         }
@@ -1866,28 +2139,16 @@
             door_bell: { bg: '#7c3aed', title: '🔔 กริ่งประตู' }
           };
           const info = map[dev.type];
-          g.innerHTML = `
-            <rect x="0" y="0" width="110" height="60" rx="10" fill="${info.bg}" stroke="${stroke}" stroke-width="${sw}"/>
-            <text x="55" y="28" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${info.title}</text>
-            <text x="55" y="46" fill="#e0f2fe" font-size="11" text-anchor="middle">${dev.label || '220V'}</text>
-            ${drawScrew(35, -12)} ${drawScrew(75, -12)}
-          `;
-          pins = [{dx:35,dy:-12},{dx:75,dy:-12}];
+          g.innerHTML = `<rect x="0" y="0" width="110" height="60" rx="10" fill="${info.bg}" stroke="${stroke}" stroke-width="${sw}"/><text x="55" y="28" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${info.title}</text><text x="55" y="46" fill="#e0f2fe" font-size="11" text-anchor="middle">${dev.label || '220V'}</text>${drawScrew(30, -10)} ${drawScrew(80, -10)}`;
+          pins = [{dx:30,dy:-10},{dx:80,dy:-10}];
           break;
         }
         case 'lan_tv_outlet': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="90" height="56" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="16" y="16" width="22" height="24" rx="2" fill="#334155"/>
-            <text x="27" y="31" fill="#fff" font-size="8" text-anchor="middle">LAN</text>
-            <circle cx="62" cy="28" r="11" fill="#cbd5e1" stroke="#475569"/>
-            <circle cx="62" cy="28" r="4" fill="#0f172a"/>
-            ${drawBadge(45, 70, dev.label || 'LAN/TV')}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="90" height="56" rx="6" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/><rect x="16" y="16" width="22" height="24" rx="2" fill="#334155"/><text x="27" y="31" fill="#fff" font-size="8" text-anchor="middle">LAN</text><circle cx="62" cy="28" r="11" fill="#cbd5e1" stroke="#475569"/><circle cx="62" cy="28" r="4" fill="#0f172a"/>${drawBadge(45, 70, dev.label || 'LAN/TV')}`;
           break;
         }
 
-        // --- ไฟฟ้านอกอาคาร (Outdoor) ---
+        // --- ไฟฟ้านอกอาคาร ---
         case 'floodlight':
         case 'street_lamp':
         case 'pillar_lamp':
@@ -1913,169 +2174,80 @@
             solenoid: { bg: '#4f46e5', title: '🚰 โซลินอยด์' }
           };
           const info = map[dev.type];
-          g.innerHTML = `
-            <rect x="0" y="0" width="110" height="60" rx="10" fill="${info.bg}" stroke="${stroke}" stroke-width="${sw}"/>
-            <text x="55" y="28" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${info.title}</text>
-            <text x="55" y="46" fill="#fef3c7" font-size="11" text-anchor="middle">${dev.label || '220V'}</text>
-            ${drawScrew(25, -12)} ${drawScrew(55, -12)} ${drawScrew(85, -12)}
-          `;
-          pins = ['photo_switch','pir_sensor'].includes(dev.type)
-            ? [{dx:25,dy:-12},{dx:55,dy:-12},{dx:85,dy:-12}]
-            : [{dx:35,dy:-12},{dx:75,dy:-12}];
+          g.innerHTML = `<rect x="0" y="0" width="110" height="60" rx="10" fill="${info.bg}" stroke="${stroke}" stroke-width="${sw}"/><text x="55" y="28" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">${info.title}</text><text x="55" y="46" fill="#fef3c7" font-size="11" text-anchor="middle">${dev.label || '220V'}</text>${drawScrew(30, -10)} ${drawScrew(80, -10)}`;
+          pins = [{dx:30,dy:-10},{dx:80,dy:-10}];
           break;
         }
 
         // --- ตู้คอนโทรล & หน้าตู้ ---
         case 'kwh_meter': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="110" height="150" rx="8" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="14" y="16" width="82" height="50" rx="4" fill="#0f172a"/>
-            <text x="55" y="42" fill="#22c55e" font-size="14" font-weight="bold" text-anchor="middle">00142.8</text>
-            <text x="55" y="58" fill="#94a3b8" font-size="9" text-anchor="middle">kWh 15(45)A</text>
-            ${drawScrew(22, 132)} ${drawScrew(44, 132)} ${drawScrew(66, 132)} ${drawScrew(88, 132)}
-          `;
-          pins = [{dx:22,dy:132},{dx:44,dy:132},{dx:66,dy:132},{dx:88,dy:132}];
+          g.innerHTML = `<rect x="0" y="0" width="110" height="150" rx="8" fill="#cbd5e1" stroke="${stroke}" stroke-width="${sw}"/><rect x="14" y="16" width="82" height="50" rx="4" fill="#0f172a"/><text x="55" y="42" fill="#22c55e" font-size="14" font-weight="bold" text-anchor="middle">00142.8</text><text x="55" y="58" fill="#94a3b8" font-size="9" text-anchor="middle">kWh 15(45)A</text>${drawScrew(20, 130)} ${drawScrew(40, 130)} ${drawScrew(70, 130)} ${drawScrew(90, 130)}`;
+          pins = [{dx:20,dy:130},{dx:40,dy:130},{dx:70,dy:130},{dx:90,dy:130}];
           break;
         }
         case 'magnetic': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="100" height="150" rx="5" fill="#334155" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="15" y="45" width="70" height="60" rx="4" fill="#1e293b"/>
-            <text x="50" y="70" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">MC ${dev.amp}</text>
-            <rect x="35" y="82" width="30" height="12" rx="2" fill="${dev.isOn ? '#22c55e' : '#64748b'}"/>
-            ${drawScrew(18, 20)} ${drawScrew(50, 20)} ${drawScrew(82, 20)}
-            ${drawScrew(18, 130)} ${drawScrew(50, 130)} ${drawScrew(82, 130)}
-            ${drawBadge(50, 164, dev.label)}
-          `;
-          pins = [{dx:18,dy:20},{dx:50,dy:20},{dx:82,dy:20},{dx:18,dy:130},{dx:50,dy:130},{dx:82,dy:130}];
+          g.innerHTML = `<rect x="0" y="0" width="100" height="150" rx="5" fill="#334155" stroke="${stroke}" stroke-width="${sw}"/><rect x="15" y="45" width="70" height="60" rx="4" fill="#1e293b"/><text x="50" y="70" fill="#38bdf8" font-size="11" font-weight="bold" text-anchor="middle">MC ${dev.amp}</text><rect x="35" y="82" width="30" height="12" rx="2" fill="${dev.isOn ? '#22c55e' : '#64748b'}"/>${drawScrew(20, 20)} ${drawScrew(50, 20)} ${drawScrew(80, 20)} ${drawScrew(20, 130)} ${drawScrew(50, 130)} ${drawScrew(80, 130)}${drawBadge(50, 164, dev.label)}`;
+          pins = [{dx:20,dy:20},{dx:50,dy:20},{dx:80,dy:20},{dx:20,dy:130},{dx:50,dy:130},{dx:80,dy:130}];
           break;
         }
         case 'overload': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="100" height="110" rx="5" fill="#475569" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="30" cy="45" r="14" fill="#0f172a" stroke="#94a3b8"/>
-            <text x="30" y="49" fill="#facc15" font-size="9" text-anchor="middle">${dev.amp}</text>
-            <rect x="60" y="34" width="24" height="22" rx="3" fill="#dc2626"/>
-            <text x="72" y="49" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle">RST</text>
-            ${drawScrew(20, 88)} ${drawScrew(50, 88)} ${drawScrew(80, 88)}
-          `;
-          pins = [{dx:20,dy:88},{dx:50,dy:88},{dx:80,dy:88}];
+          g.innerHTML = `<rect x="0" y="0" width="100" height="110" rx="5" fill="#475569" stroke="${stroke}" stroke-width="${sw}"/><circle cx="30" cy="45" r="14" fill="#0f172a" stroke="#94a3b8"/><text x="30" y="49" fill="#facc15" font-size="9" text-anchor="middle">${dev.amp}</text><rect x="60" y="34" width="24" height="22" rx="3" fill="#dc2626"/><text x="72" y="49" fill="#fff" font-size="9" font-weight="bold" text-anchor="middle">RST</text>${drawScrew(20, 90)} ${drawScrew(50, 90)} ${drawScrew(80, 90)}`;
+          pins = [{dx:20,dy:90},{dx:50,dy:90},{dx:80,dy:90}];
           break;
         }
         case 'timer': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="80" height="150" rx="4" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="12" y="44" width="56" height="32" rx="3" fill="#84cc16" stroke="#365314"/>
-            <text x="40" y="65" fill="#0f172a" font-size="13" font-weight="bold" text-anchor="middle">08:00</text>
-            ${drawScrew(20, 20)} ${drawScrew(60, 20)}
-            ${drawScrew(20, 130)} ${drawScrew(60, 130)}
-            ${drawBadge(40, 164, dev.label || 'TIMER')}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="80" height="150" rx="4" fill="#f8fafc" stroke="${stroke}" stroke-width="${sw}"/><rect x="12" y="44" width="56" height="32" rx="3" fill="#84cc16" stroke="#365314"/><text x="40" y="65" fill="#0f172a" font-size="13" font-weight="bold" text-anchor="middle">08:00</text>${drawScrew(20, 20)} ${drawScrew(60, 20)} ${drawScrew(20, 130)} ${drawScrew(60, 130)}${drawBadge(40, 164, dev.label || 'TIMER')}`;
           pins = [{dx:20,dy:20},{dx:60,dy:20},{dx:20,dy:130},{dx:60,dy:130}];
           break;
         }
         case 'relay8': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="60" height="110" rx="4" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="10" y="32" width="40" height="46" rx="3" fill="rgba(56,189,248,0.25)" stroke="#38bdf8"/>
-            <text x="30" y="59" fill="#fff" font-size="10" text-anchor="middle">RELAY</text>
-            ${drawScrew(18, 16)} ${drawScrew(42, 16)}
-            ${drawScrew(18, 94)} ${drawScrew(42, 94)}
-          `;
-          pins = [{dx:18,dy:16},{dx:42,dy:16},{dx:18,dy:94},{dx:42,dy:94}];
+          g.innerHTML = `<rect x="0" y="0" width="60" height="110" rx="4" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/><rect x="10" y="32" width="40" height="46" rx="3" fill="rgba(56,189,248,0.25)" stroke="#38bdf8"/><text x="30" y="59" fill="#fff" font-size="10" text-anchor="middle">RELAY</text>${drawScrew(20, 20)} ${drawScrew(40, 20)} ${drawScrew(20, 90)} ${drawScrew(40, 90)}`;
+          pins = [{dx:20,dy:20},{dx:40,dy:20},{dx:20,dy:90},{dx:40,dy:90}];
           break;
         }
         case 'phase_prot': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="60" height="150" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="10" y="45" width="40" height="24" rx="2" fill="#0f172a"/>
-            <text x="30" y="61" fill="#22c55e" font-size="11" font-weight="bold" text-anchor="middle">220V</text>
-            ${drawScrew(20, 20)} ${drawScrew(40, 20)}
-            ${drawScrew(20, 130)} ${drawScrew(40, 130)}
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="60" height="150" rx="4" fill="#e2e8f0" stroke="${stroke}" stroke-width="${sw}"/><rect x="10" y="45" width="40" height="24" rx="2" fill="#0f172a"/><text x="30" y="61" fill="#22c55e" font-size="11" font-weight="bold" text-anchor="middle">220V</text>${drawScrew(20, 20)} ${drawScrew(40, 20)} ${drawScrew(20, 130)} ${drawScrew(40, 130)}`;
           pins = [{dx:20,dy:20},{dx:40,dy:20},{dx:20,dy:130},{dx:40,dy:130}];
           break;
         }
         case 'ats': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="120" height="150" rx="5" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
-            <text x="60" y="65" fill="#facc15" font-size="13" font-weight="bold" text-anchor="middle">ATS 2P</text>
-            <text x="60" y="85" fill="#38bdf8" font-size="10" text-anchor="middle">${dev.isOn ? 'SOURCE A' : 'SOURCE B'}</text>
-            ${drawScrew(24, 20)} ${drawScrew(50, 20)} ${drawScrew(74, 20)} ${drawScrew(96, 20)}
-            ${drawScrew(35, 130)} ${drawScrew(85, 130)}
-          `;
-          pins = [{dx:24,dy:20},{dx:50,dy:20},{dx:74,dy:20},{dx:96,dy:20},{dx:35,dy:130},{dx:85,dy:130}];
+          g.innerHTML = `<rect x="0" y="0" width="120" height="150" rx="5" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/><text x="60" y="65" fill="#facc15" font-size="13" font-weight="bold" text-anchor="middle">ATS 2P</text><text x="60" y="85" fill="#38bdf8" font-size="10" text-anchor="middle">${dev.isOn ? 'SOURCE A' : 'SOURCE B'}</text>${drawScrew(20, 20)} ${drawScrew(50, 20)} ${drawScrew(70, 20)} ${drawScrew(100, 20)} ${drawScrew(30, 130)} ${drawScrew(90, 130)}`;
+          pins = [{dx:20,dy:20},{dx:50,dy:20},{dx:70,dy:20},{dx:100,dy:20},{dx:30,dy:130},{dx:90,dy:130}];
           break;
         }
         case 'psu_12v': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="120" height="90" rx="5" fill="#94a3b8" stroke="${stroke}" stroke-width="${sw}"/>
-            <rect x="10" y="10" width="100" height="45" rx="3" fill="#475569"/>
-            <text x="60" y="36" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">DC 12V/24V</text>
-            ${drawScrew(20, 72)} ${drawScrew(46, 72)} ${drawScrew(74, 72)} ${drawScrew(100, 72)}
-          `;
-          pins = [{dx:20,dy:72},{dx:46,dy:72},{dx:74,dy:72},{dx:100,dy:72}];
+          g.innerHTML = `<rect x="0" y="0" width="120" height="90" rx="5" fill="#94a3b8" stroke="${stroke}" stroke-width="${sw}"/><rect x="10" y="10" width="100" height="45" rx="3" fill="#475569"/><text x="60" y="36" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">DC 12V/24V</text>${drawScrew(20, 70)} ${drawScrew(50, 70)} ${drawScrew(70, 70)} ${drawScrew(100, 70)}`;
+          pins = [{dx:20,dy:70},{dx:50,dy:70},{dx:70,dy:70},{dx:100,dy:70}];
           break;
         }
         case 'pilot_lamp': {
-          g.innerHTML = `
-            <circle cx="30" cy="30" r="26" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="30" cy="30" r="18" fill="${dev.isOn ? dev.color : '#334155'}"/>
-            ${drawScrew(18, 66)} ${drawScrew(42, 66)}
-            ${drawBadge(30, 86, dev.label)}
-          `;
-          pins = [{dx:18,dy:66},{dx:42,dy:66}];
+          g.innerHTML = `<circle cx="30" cy="30" r="26" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/><circle cx="30" cy="30" r="18" fill="${dev.isOn ? dev.color : '#334155'}"/>${drawScrew(20, 70)} ${drawScrew(40, 70)}${drawBadge(30, 88, dev.label)}`;
+          pins = [{dx:20,dy:70},{dx:40,dy:70}];
           break;
         }
         case 'push_btn': {
-          g.innerHTML = `
-            <rect x="4" y="4" width="52" height="52" rx="8" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="30" cy="30" r="17" fill="${dev.color}" stroke="#0f172a" stroke-width="2"/>
-            ${drawScrew(18, 68)} ${drawScrew(42, 68)}
-            ${drawBadge(30, 88, dev.label)}
-          `;
-          pins = [{dx:18,dy:68},{dx:42,dy:68}];
+          g.innerHTML = `<rect x="4" y="4" width="52" height="52" rx="8" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/><circle cx="30" cy="30" r="17" fill="${dev.color}" stroke="#0f172a" stroke-width="2"/>${drawScrew(20, 70)} ${drawScrew(40, 70)}${drawBadge(30, 88, dev.label)}`;
+          pins = [{dx:20,dy:70},{dx:40,dy:70}];
           break;
         }
         case 'emergency_btn': {
-          g.innerHTML = `
-            <rect x="4" y="4" width="52" height="52" rx="8" fill="#facc15" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="30" cy="30" r="20" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/>
-            <text x="30" y="33" fill="#fff" font-size="8" font-weight="bold" text-anchor="middle">STOP</text>
-            ${drawScrew(18, 68)} ${drawScrew(42, 68)}
-          `;
-          pins = [{dx:18,dy:68},{dx:42,dy:68}];
+          g.innerHTML = `<rect x="4" y="4" width="52" height="52" rx="8" fill="#facc15" stroke="${stroke}" stroke-width="${sw}"/><circle cx="30" cy="30" r="20" fill="#dc2626" stroke="#7f1d1d" stroke-width="2"/><text x="30" y="33" fill="#fff" font-size="8" font-weight="bold" text-anchor="middle">STOP</text>${drawScrew(20, 70)} ${drawScrew(40, 70)}`;
+          pins = [{dx:20,dy:70},{dx:40,dy:70}];
           break;
         }
         case 'selector': {
-          g.innerHTML = `
-            <rect x="4" y="4" width="52" height="52" rx="8" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="30" cy="30" r="18" fill="#334155"/>
-            <rect x="26" y="12" width="8" height="36" rx="3" fill="#f8fafc" transform="rotate(${dev.isOn ? 35 : -35} 30 30)"/>
-            ${drawScrew(18, 68)} ${drawScrew(42, 68)}
-            ${drawBadge(30, 88, dev.label || 'AUTO/MAN')}
-          `;
-          pins = [{dx:18,dy:68},{dx:42,dy:68}];
+          g.innerHTML = `<rect x="4" y="4" width="52" height="52" rx="8" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/><circle cx="30" cy="30" r="18" fill="#334155"/><rect x="26" y="12" width="8" height="36" rx="3" fill="#f8fafc" transform="rotate(${dev.isOn ? 35 : -35} 30 30)"/>${drawScrew(20, 70)} ${drawScrew(40, 70)}${drawBadge(30, 88, dev.label || 'AUTO/MAN')}`;
+          pins = [{dx:20,dy:70},{dx:40,dy:70}];
           break;
         }
         case 'digital_meter': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="90" height="90" rx="6" fill="#0f172a" stroke="${stroke}" stroke-width="${sw}"/>
-            <text x="45" y="36" fill="#ef4444" font-size="18" font-weight="bold" text-anchor="middle">228V</text>
-            <text x="45" y="62" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">12.4A</text>
-            ${drawScrew(22, 102)} ${drawScrew(68, 102)}
-          `;
-          pins = [{dx:22,dy:102},{dx:68,dy:102}];
+          g.innerHTML = `<rect x="0" y="0" width="90" height="90" rx="6" fill="#0f172a" stroke="${stroke}" stroke-width="${sw}"/><text x="45" y="36" fill="#ef4444" font-size="18" font-weight="bold" text-anchor="middle">228V</text><text x="45" y="62" fill="#38bdf8" font-size="16" font-weight="bold" text-anchor="middle">12.4A</text>${drawScrew(20, 100)} ${drawScrew(70, 100)}`;
+          pins = [{dx:20,dy:100},{dx:70,dy:100}];
           break;
         }
         case 'panel_fan': {
-          g.innerHTML = `
-            <rect x="0" y="0" width="80" height="80" rx="8" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/>
-            <circle cx="40" cy="40" r="30" fill="#0f172a" stroke="#475569" stroke-width="2"/>
-            <path d="M 40 16 C 48 16 50 32 40 40 C 30 32 32 16 40 16 Z M 40 64 C 48 64 50 48 40 40 C 30 48 32 64 40 64 Z M 16 40 C 16 32 32 30 40 40 C 32 50 16 48 16 40 Z M 64 40 C 64 32 48 30 40 40 C 48 50 64 48 64 40 Z" fill="#38bdf8"/>
-            ${drawScrew(22, 92)} ${drawScrew(58, 92)}
-          `;
-          pins = [{dx:22,dy:92},{dx:58,dy:92}];
+          g.innerHTML = `<rect x="0" y="0" width="80" height="80" rx="8" fill="#1e293b" stroke="${stroke}" stroke-width="${sw}"/><circle cx="40" cy="40" r="30" fill="#0f172a" stroke="#475569" stroke-width="2"/><path d="M 40 16 C 48 16 50 32 40 40 C 30 32 32 16 40 16 Z M 40 64 C 48 64 50 48 40 40 C 30 48 32 64 40 64 Z M 16 40 C 16 32 32 30 40 40 C 32 50 16 48 16 40 Z M 64 40 C 64 32 48 30 40 40 C 48 50 64 48 64 40 Z" fill="#38bdf8"/>${drawScrew(20, 90)} ${drawScrew(60, 90)}`;
+          pins = [{dx:20,dy:90},{dx:60,dy:90}];
           break;
         }
 
@@ -2085,34 +2257,28 @@
           const bg = dev.color || '#facc15';
           const textColor = ['#111111', '#e74c3c', '#3498db', '#2ecc71'].includes(bg) ? '#fff' : '#000';
           const w = Math.max(28, getExactTextWidth(text, 11, true) + 12);
-          g.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="22" rx="4" fill="${bg}" stroke="${stroke}" stroke-width="${sw}"/>
-            <text x="${w/2}" y="15" fill="${textColor}" font-size="11" font-weight="bold" text-anchor="middle">${text}</text>
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="${w}" height="22" rx="4" fill="${bg}" stroke="${stroke}" stroke-width="${sw}"/><text x="${w/2}" y="15" fill="${textColor}" font-size="11" font-weight="bold" text-anchor="middle">${text}</text>`;
           break;
         }
         case 'label_tag': {
           const text = dev.label || 'ป้ายชื่อวงจร';
           const w = getExactTextWidth(text, 12, true) + 18;
-          g.innerHTML = `
-            <rect x="0" y="0" width="${w}" height="26" rx="4" fill="#facc15" stroke="${stroke}" stroke-width="${sw}"/>
-            <text x="${w/2}" y="17" fill="#0f172a" font-size="12" font-weight="bold" text-anchor="middle">${text}</text>
-          `;
+          g.innerHTML = `<rect x="0" y="0" width="${w}" height="26" rx="4" fill="#facc15" stroke="${stroke}" stroke-width="${sw}"/><text x="${w/2}" y="17" fill="#0f172a" font-size="12" font-weight="bold" text-anchor="middle">${text}</text>`;
           break;
         }
       }
 
       createTerminalPoints(dev, pins);
-      g.addEventListener('pointerdown', (e) => startDeviceDrag(e, dev, g));
+      g.addEventListener('pointerdown', (e) => startDeviceDrag(e, dev));
       targetLayer.appendChild(g);
     });
   }
 
   function drawScrew(cx, cy) {
     return `
-      <circle cx="${cx}" cy="${cy}" r="8" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
-      <line x1="${cx-3.5}" y1="${cy-3.5}" x2="${cx+3.5}" y2="${cy+3.5}" stroke="#334155" stroke-width="1.8"/>
-      <line x1="${cx+3.5}" y1="${cy-3.5}" x2="${cx-3.5}" y2="${cy+3.5}" stroke="#334155" stroke-width="1.8"/>
+      <circle cx="${cx}" cy="${cy}" r="7" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+      <line x1="${cx-3}" y1="${cy-3}" x2="${cx+3}" y2="${cy+3}" stroke="#334155" stroke-width="1.6"/>
+      <line x1="${cx+3}" y1="${cy-3}" x2="${cx-3}" y2="${cy+3}" stroke="#334155" stroke-width="1.6"/>
     `;
   }
 
@@ -2137,7 +2303,7 @@
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', absX);
       circle.setAttribute('cy', absY);
-      circle.setAttribute('r', '11');
+      circle.setAttribute('r', '10');
       circle.setAttribute('fill', 'rgba(255, 140, 0, 0.35)');
       circle.setAttribute('stroke', '#ff8c00');
       circle.setAttribute('stroke-width', '2');
@@ -2172,9 +2338,21 @@
     });
   }
 
-  function showInspector(dev) {
+  function updateInspectorUI() {
+    if (selectedIds.size === 0) {
+      inspector.style.display = 'none';
+      return;
+    }
+
     inspector.style.display = 'flex';
-    document.getElementById('inspTitle').textContent = dev.name;
+    const isMulti = selectedIds.size > 1;
+    const firstId = Array.from(selectedIds)[0];
+    const dev = devices.find(d => d.id === firstId);
+    if (!dev) return;
+
+    document.getElementById('inspTitle').textContent = isMulti ? `เลือกอยู่ ${selectedIds.size} ชิ้น` : dev.name;
+    document.getElementById('btnGroup').style.display = isMulti ? 'block' : 'none';
+    document.getElementById('btnUngroup').style.display = dev.groupId ? 'block' : 'none';
 
     const rot = dev.rot || 0;
     document.getElementById('rotSlider').value = rot;
@@ -2182,20 +2360,29 @@
 
     const pipeTypes = ['pipe_pvc','pipe_upvc','pipe_emt','pipe_imc','pipe_flex','pipe_liquid','wireway','wire_duct'];
     const fittingTypes = ['elbow90','sweep_bend','elbow45','tee_pipe','cross_pipe','coupling','box_conn','clamp'];
+    const archTypes = ['wall_aac','wall_brick','wall_concrete','floor_slab','ceiling_gyp','wall_chase'];
+    const hasViewTypes = ['main2p','rcbo2p','dc_mcb2p','rcbo1pn','mcb1p','outlet_duplex','outlet_wp','wall_switch','switch_2way','dimmer_sw'];
+
     const isPipe = pipeTypes.includes(dev.type);
     const isFitting = fittingTypes.includes(dev.type);
+    const isArch = archTypes.includes(dev.type);
+    const hasView = !isMulti && hasViewTypes.includes(dev.type);
 
-    const hasAmp = ['main2p','rcbo2p','rcbo4p','rcbo1pn','mcb1p','mcb3p','dc_mcb2p','spd','fuse','magnetic','overload'].includes(dev.type);
-    const hasColor = ['pilot_lamp','push_btn','vinus_tag'].includes(dev.type);
-    const hasSlots = ['din_rail','comb_busbar','copper_bar','bar_n','bar_g','box_frame'].includes(dev.type);
+    const hasAmp = !isMulti && ['main2p','rcbo2p','rcbo4p','rcbo1pn','mcb1p','mcb3p','dc_mcb2p','spd','fuse','magnetic','overload'].includes(dev.type);
+    const hasColor = !isMulti && ['pilot_lamp','push_btn','vinus_tag'].includes(dev.type);
+    const hasSlots = !isMulti && ['din_rail','comb_busbar','copper_bar','bar_n','bar_g','box_frame'].includes(dev.type);
 
-    document.getElementById('pipeSpecGroup').style.display = (isPipe || isFitting) ? 'flex' : 'none';
-    document.getElementById('pipeLenBox').style.display = isPipe ? 'block' : 'none';
+    document.getElementById('viewFaceGroup').style.display = hasView ? 'block' : 'none';
+    document.getElementById('pipeSpecGroup').style.display = (!isMulti && (isPipe || isFitting || isArch)) ? 'flex' : 'none';
+    document.getElementById('pipeSizeBox').style.display = (isPipe || isFitting) ? 'block' : 'none';
+    document.getElementById('pipeLenBox').style.display = (isPipe || isArch) ? 'block' : 'none';
     document.getElementById('ampGroup').style.display = hasAmp ? 'block' : 'none';
     document.getElementById('colorGroup').style.display = hasColor ? 'block' : 'none';
     document.getElementById('widthGroup').style.display = hasSlots ? 'block' : 'none';
+    document.getElementById('textGroup').style.display = !isMulti ? 'block' : 'none';
 
-    if (isPipe || isFitting) {
+    if (hasView) document.getElementById('viewFaceSelect').value = dev.viewFace || 'front';
+    if (isPipe || isFitting || isArch) {
       document.getElementById('pipeSizeSelect').value = dev.pipeSize || '4 หุน';
       document.getElementById('pipeLenInput').value = dev.pipeLen || 1;
       document.getElementById('pipeUnitSelect').value = dev.pipeUnit || 'เมตร';
@@ -2203,87 +2390,101 @@
     if (hasAmp) document.getElementById('ampSelect').value = dev.amp;
     if (hasColor) document.getElementById('lampColorSelect').value = dev.color;
     if (hasSlots) document.getElementById('slotSelect').value = dev.slots;
-    document.getElementById('labelInput').value = dev.label || '';
+    if (!isMulti) document.getElementById('labelInput').value = dev.label || '';
   }
 
   function closeInspector() {
     inspector.style.display = 'none';
-    selectedDeviceId = null;
+    selectedIds.clear();
     render();
   }
 
   function updateDeviceProp(prop, val) {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    if (dev) {
-      pushHistory();
-      dev[prop] = val;
-      saveData();
-      render();
-    }
+    if (selectedIds.size === 0) return;
+    pushHistory();
+    selectedIds.forEach(id => {
+      const dev = devices.find(d => d.id === id);
+      if (dev) dev[prop] = val;
+    });
+    saveData();
+    render();
   }
 
   function updatePipeLength() {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    if (dev) {
-      pushHistory();
-      dev.pipeLen = parseFloat(document.getElementById('pipeLenInput').value) || 1;
-      dev.pipeUnit = document.getElementById('pipeUnitSelect').value;
-      saveData();
-      render();
-    }
+    if (selectedIds.size === 0) return;
+    pushHistory();
+    const len = parseFloat(document.getElementById('pipeLenInput').value) || 1;
+    const unit = document.getElementById('pipeUnitSelect').value;
+    selectedIds.forEach(id => {
+      const dev = devices.find(d => d.id === id);
+      if (dev) { dev.pipeLen = len; dev.pipeUnit = unit; }
+    });
+    saveData();
+    render();
   }
 
   function setSelectedRotation(deg) {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    if (dev) {
-      dev.rot = deg % 360;
-      document.getElementById('rotDegLabel').textContent = dev.rot + '°';
-      saveData();
-      render();
-    }
+    selectedIds.forEach(id => {
+      const dev = devices.find(d => d.id === id);
+      if (dev) dev.rot = deg % 360;
+    });
+    document.getElementById('rotDegLabel').textContent = (deg % 360) + '°';
+    saveData();
+    render();
   }
 
   function rotateSelected(deg) {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    if (dev) {
-      pushHistory();
-      dev.rot = ((dev.rot || 0) + deg) % 360;
-      document.getElementById('rotSlider').value = dev.rot;
-      document.getElementById('rotDegLabel').textContent = dev.rot + '°';
-      saveData();
-      render();
-    }
+    pushHistory();
+    let lastRot = 0;
+    selectedIds.forEach(id => {
+      const dev = devices.find(d => d.id === id);
+      if (dev) {
+        dev.rot = ((dev.rot || 0) + deg) % 360;
+        lastRot = dev.rot;
+      }
+    });
+    document.getElementById('rotSlider').value = lastRot;
+    document.getElementById('rotDegLabel').textContent = lastRot + '°';
+    saveData();
+    render();
   }
 
   function toggleDeviceState() {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    if (dev) {
-      pushHistory();
-      dev.isOn = !dev.isOn;
-      saveData();
-      render();
-    }
+    pushHistory();
+    selectedIds.forEach(id => {
+      const dev = devices.find(d => d.id === id);
+      if (dev) dev.isOn = !dev.isOn;
+    });
+    saveData();
+    render();
   }
 
   function duplicateSelected() {
-    const dev = devices.find(d => d.id === selectedDeviceId);
-    if (dev) {
-      pushHistory();
-      const copy = JSON.parse(JSON.stringify(dev));
-      copy.id = 'dev_' + Date.now();
-      copy.x += 40;
-      copy.y += 40;
-      devices.push(copy);
-      selectedDeviceId = copy.id;
-      showInspector(copy);
-      saveData();
-      render();
-    }
+    if (selectedIds.size === 0) return;
+    pushHistory();
+    const newGroupId = selectedIds.size > 1 ? 'grp_' + Date.now() : undefined;
+    const newIds = new Set();
+    selectedIds.forEach(id => {
+      const dev = devices.find(d => d.id === id);
+      if (dev) {
+        const copy = JSON.parse(JSON.stringify(dev));
+        copy.id = 'dev_' + Date.now() + Math.random().toString(36).substr(2, 4);
+        if (newGroupId) copy.groupId = newGroupId;
+        copy.x += 40;
+        copy.y += 40;
+        devices.push(copy);
+        newIds.add(copy.id);
+      }
+    });
+    selectedIds = newIds;
+    updateInspectorUI();
+    saveData();
+    render();
   }
 
   function deleteSelected() {
     pushHistory();
-    devices = devices.filter(d => d.id !== selectedDeviceId);
+    devices = devices.filter(d => !selectedIds.has(d.id));
     closeInspector();
     saveData();
     render();
