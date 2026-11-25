@@ -1,4 +1,4 @@
-const CACHE_NAME = 'panel-studio-v7';
+const CACHE_NAME = 'panel-studio-v8';
 const ASSETS = [
   './',
   './index.html',
